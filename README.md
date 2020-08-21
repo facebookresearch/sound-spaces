@@ -2,7 +2,7 @@
 SoundSpaces is a realistic acoustic simulation platform for audio-visual embodied AI research. From audio-visual navigation and audio-visual exploration to echolocation, this platform expands embodied vision research to a broader scope of topics.
 
 ## Introduction Video
-[<img src="https://i.imgur.com/YzlSDJj.png" width="80%">](https://youtu.be/4uiptTUyq30)
+[<img src="https://i.imgur.com/BdhXQaZ.png" width="80%">](https://youtu.be/4uiptTUyq30)
 
 Presentation videos can be found at our [project page](http://vision.cs.utexas.edu/projects/audio_visual_navigation/).
 
