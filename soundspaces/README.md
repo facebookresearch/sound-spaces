@@ -11,13 +11,17 @@ The SoundSpaces dataset includes audio renderings (room impulse responses) for t
 ```
 python scripts/cache_observations.py
 ```
-3. Run the commands below in the data directory to download binaural RIRs, metadata, datasets and sound files.
+3. Run the commands below in the **data** directory to download partial binaural RIRs (867G), metadata (1M), datasets (77M) and sound files (13M). Note that this partial binaural RIRs only contain renderings for nodes accessible by the agent on the navigation graph. 
 ```
 wget http://dl.fbaipublicfiles.com/SoundSpaces/binaural_rirs.tar && tar xvf binaural_rirs.tar
 wget http://dl.fbaipublicfiles.com/SoundSpaces/metadata.tar.xz && tar xvf metadata.tar.xz
 wget http://dl.fbaipublicfiles.com/SoundSpaces/sounds.tar.xz && tar xvf sounds.tar.xz
 wget http://dl.fbaipublicfiles.com/SoundSpaces/datasets.tar.xz && tar xvf datasets.tar.xz
 ```
+<!-- 4. (Optional) Download the full ambisonic and binaural RIRs data by running the following script in the root directory. 
+```
+python script/download_data.py
+``` -->
 
 
 ## Data Folder Structure

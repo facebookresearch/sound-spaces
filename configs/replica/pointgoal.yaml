@@ -41,4 +41,4 @@ DATASET:
   VERSION: "v1"
   SCENE_DATASET: "replica"
   SCENES_DIR: "data/scene_datasets/replica"
-  DATA_PATH: "data/datasets/replica/{version}/{split}/{split}.json.gz"
+  DATA_PATH: "data/datasets/audionav/replica/{version}/{split}/{split}.json.gz"

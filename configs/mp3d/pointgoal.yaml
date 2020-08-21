@@ -41,4 +41,4 @@ DATASET:
   CONTENT_SCENES: ["*"]
   VERSION: "v1"
   SCENES_DIR: "data/scene_datasets/mp3d"
-  DATA_PATH: "data/datasets/mp3d/{version}/{split}/{split}.json.gz"
+  DATA_PATH: "data/datasets/audionav/mp3d/{version}/{split}/{split}.json.gz"

@@ -93,7 +93,7 @@ class SoundSpaces(HabitatSim):
         self._position_to_index_mapping = dict()
         self._previous_step_collided = False
 
-        self.points, self.graph = load_metadata(self.meta_dir)
+        self.points, self.graph = load_metadata(self.metadata_dir)
         for node in self.graph.nodes():
             self._position_to_index_mapping[self.position_encoding(self.graph.nodes()[node]['point'])] = node
         self._load_sound_sources()
@@ -135,16 +135,8 @@ class SoundSpaces(HabitatSim):
         return self.config.AUDIO.SOURCE_SOUND_DIR
 
     @property
-    def meta_dir(self):
-        return os.path.join(self.config.AUDIO.META_DIR, self.config.SCENE_DATASET, self.current_scene_name)
-
-    @property
-    def feature_dir(self):
-        return os.path.join(self.config.AUDIO.FEATURE_DIR, self.config.SCENE_DATASET, self.current_scene_name)
-
-    @property
-    def audio_dir(self):
-        return os.path.join(self.config.AUDIO.AUDIO_DIR, self.config.SCENE_DATASET, self.current_scene_name)
+    def metadata_dir(self):
+        return os.path.join(self.config.AUDIO.METADATA_DIR, self.config.SCENE_DATASET, self.current_scene_name)
 
     @property
     def current_scene_name(self):
@@ -183,7 +175,7 @@ class SoundSpaces(HabitatSim):
                     self._frame_cache = pickle.load(fo)
             logging.debug('Loaded scene {}'.format(self.current_scene_name))
 
-            self.points, self.graph = load_metadata(self.meta_dir)
+            self.points, self.graph = load_metadata(self.metadata_dir)
             for node in self.graph.nodes():
                 self._position_to_index_mapping[self.position_encoding(self.graph.nodes()[node]['point'])] = node
 

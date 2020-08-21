@@ -115,13 +115,10 @@ _TC.SIMULATOR.AUDIO = CN()
 _TC.SIMULATOR.AUDIO.SCENE = ""
 _TC.SIMULATOR.AUDIO.BINAURAL_RIR_DIR = "data/binaural_rirs"
 _TC.SIMULATOR.AUDIO.RIR_SAMPLING_RATE = 44100
-_TC.SIMULATOR.AUDIO.AUDIO_DIR = "data/convolved_binaural"
 _TC.SIMULATOR.AUDIO.SOURCE_SOUND_DIR = "data/sounds/1s_all"
-_TC.SIMULATOR.AUDIO.FEATURE_DIR = "data/features"
-_TC.SIMULATOR.AUDIO.META_DIR = "data/metadata"
+_TC.SIMULATOR.AUDIO.METADATA_DIR = "data/metadata"
 _TC.SIMULATOR.AUDIO.POINTS_FILE = 'points.txt'
 _TC.SIMULATOR.AUDIO.GRAPH_FILE = 'graph.pkl'
-_TC.SIMULATOR.AUDIO.FEATURE_FILE = 'features.pkl'
 # -----------------------------------------------------------------------------
 # DistanceToGoal Measure
 # -----------------------------------------------------------------------------

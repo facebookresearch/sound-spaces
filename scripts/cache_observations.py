@@ -53,8 +53,8 @@ class SoundSpaces(HabitatSim):
 
         if not is_same_scene or self.points is None or self.graph is None:
             # can happen during initialization or reconfiguration
-            meta_dir = os.path.join('data/metadata', dataset, scene_name)
-            self.points, self.graph = load_metadata(meta_dir)
+            metadata_dir = os.path.join('data/metadata', dataset, scene_name)
+            self.points, self.graph = load_metadata(metadata_dir)
 
         # after env calls reconfigure to update the config with current episode,
         # simulation needs to update the agent position, rotation in accordance with the new config file
@@ -105,13 +105,13 @@ def main(dataset):
     simulator = None
     scene_obs = defaultdict(dict)
     num_obs = 0
-    scene_obs_dir = 'data/scene_observations2/' + dataset
+    scene_obs_dir = 'data/scene_observations/' + dataset
     os.makedirs(scene_obs_dir, exist_ok=True)
-    meta_dir = 'data/metadata/' + dataset
-    for scene in os.listdir(meta_dir):
+    metadata_dir = 'data/metadata/' + dataset
+    for scene in os.listdir(metadata_dir):
         scene_obs = dict()
-        scene_meta_dir = os.path.join(meta_dir, scene)
-        points, graph = load_metadata(scene_meta_dir)
+        scene_metadata_dir = os.path.join(metadata_dir, scene)
+        points, graph = load_metadata(scene_metadata_dir)
         if dataset == 'replica':
             scene_mesh_dir = os.path.join('data/scene_datasets', dataset, scene, 'habitat/mesh_semantic.ply')
         else:

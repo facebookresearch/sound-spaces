@@ -1,10 +1,10 @@
 ## SoundSpaces: Audio-Visual Navigation in 3D Environments
-SoundSpaces is a realistic acoustic simulation platform for audio-visual embodied AI research. From audio-visual navigation to audio-visual exploration and echolocation, this platform expands embodied vision research to a broader scope of topics.
+SoundSpaces is a realistic acoustic simulation platform for audio-visual embodied AI research. From audio-visual navigation and audio-visual exploration to echolocation, this platform expands embodied vision research to a broader scope of topics.
 
-## Demo - Where is the piano?
-Wear your headphone to listen to the binaural sound.
+## Introduction Video
+[<img src="https://i.imgur.com/YzlSDJj.png" width="60%">](https://youtu.be/4uiptTUyq30)
 
-[<img src="https://i.imgur.com/GTwi4xo.jpg" width="60%">](https://youtu.be/3knAgMvajmw)
+Presentation videos can be found at our [project page](http://vision.cs.utexas.edu/projects/audio_visual_navigation/).
 
 ## Motivation
 Moving around in the world is naturally a multisensory experience, but today's embodied agents are deaf---restricted to solely their visual perception of the environment. We introduce audio-visual navigation for complex, acoustically and visually realistic 3D environments. We further build *SoundSpaces*: a first-of-its-kind dataset of audio renderings based on geometrical acoustic simulations for two sets of publicly available 3D environments (Matterport3D and Replica), and we instrument [Habitat](https://github.com/facebookresearch/habitat-api/blob/master/README.md) to support the new sensor, making it possible to insert arbitrary sound sources in an array of real-world scanned environments.
