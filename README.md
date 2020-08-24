@@ -32,19 +32,19 @@ pip install -e .
 This repo supports benchmarking PointGoal, AudioGoal and AudioPointGoal with different sensors on two datasets. Below we show the commands for training and evaluating AudioGoal with Depth sensor on Replica, but it applies to the other two tasks, other sensors and Matterport dataset as well. 
 1. Training
 ```
-python baselines/run.py --exp-config baselines/config/replica/train_telephone/audiogoal_depth.yaml --model-dir data/models/replica/audiogoal_depth
+python av_nav/run.py --exp-config av_nav/config/replica/train_telephone/audiogoal_depth.yaml --model-dir data/models/replica/audiogoal_depth
 ```
 2. Validation (evaluate each checkpoint and generate a validation curve)
 ```
-python baselines/run.py --run-type eval --exp-config baselines/config/replica/val_telephone/audiogoal_depth.yaml --model-dir data/models/replica/audiogoal_depth
+python av_nav/run.py --run-type eval --exp-config av_nav/config/replica/val_telephone/audiogoal_depth.yaml --model-dir data/models/replica/audiogoal_depth
 ```
 3. Test the best validation checkpoint based on validation curve
 ```
-python baselines/run.py --run-type eval --exp-config baselines/config/replica/test_telephone/audiogoal_depth.yaml --model-dir data/models/replica/audiogoal_depth EVAL_CKPT_PATH_DIR data/models/replica/audiogoal_depth/data/ckpt.XXX.pth
+python av_nav/run.py --run-type eval --exp-config av_nav/config/replica/test_telephone/audiogoal_depth.yaml --model-dir data/models/replica/audiogoal_depth EVAL_CKPT_PATH_DIR data/models/replica/audiogoal_depth/data/ckpt.XXX.pth
 ```
 4. Generate demo video with audio
 ```
-python baselines/run.py --run-type eval --exp-config baselines/config/replica/test_telephone/audiogoal_depth.yaml --model-dir data/models/replica/audiogoal_depth EVAL_CKPT_PATH_DIR data/models/replica/audiogoal_depth/data/ckpt.220.pth VIDEO_OPTION [\"disk\"] TASK_CONFIG.SIMULATOR.USE_RENDERED_OBSERVATIONS False TASK_CONFIG.TASK.SENSORS [\"POINTGOAL_WITH_GPS_COMPASS_SENSOR\",\"SPECTROGRAM_SENSOR\",\"AUDIOGOAL_SENSOR\"] SENSORS [\"RGB_SENSOR\",\"DEPTH_SENSOR\"] EXTRA_RGB True TASK_CONFIG.SIMULATOR.CONTINUOUS_VIEW_CHANGE True DISPLAY_RESOLUTION 512 TEST_EPISODE_COUNT 1
+python av_nav/run.py --run-type eval --exp-config av_nav/config/replica/test_telephone/audiogoal_depth.yaml --model-dir data/models/replica/audiogoal_depth EVAL_CKPT_PATH_DIR data/models/replica/audiogoal_depth/data/ckpt.220.pth VIDEO_OPTION [\"disk\"] TASK_CONFIG.SIMULATOR.USE_RENDERED_OBSERVATIONS False TASK_CONFIG.TASK.SENSORS [\"POINTGOAL_WITH_GPS_COMPASS_SENSOR\",\"SPECTROGRAM_SENSOR\",\"AUDIOGOAL_SENSOR\"] SENSORS [\"RGB_SENSOR\",\"DEPTH_SENSOR\"] EXTRA_RGB True TASK_CONFIG.SIMULATOR.CONTINUOUS_VIEW_CHANGE True DISPLAY_RESOLUTION 512 TEST_EPISODE_COUNT 1
 ```
 5. Interactive demo
 ```

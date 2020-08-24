@@ -21,7 +21,7 @@ import moviepy.editor as mpy
 from moviepy.audio.AudioClip import CompositeAudioClip
 
 from habitat.utils.visualizations.utils import images_to_video
-from baselines.common.tensorboard_utils import TensorboardWriter
+from av_nav.common.tensorboard_utils import TensorboardWriter
 from habitat.utils.visualizations import maps
 
 

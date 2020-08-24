@@ -19,9 +19,9 @@ from habitat.sims.habitat_simulator.actions import HabitatSimActions
 from habitat.utils.visualizations import maps
 from habitat.datasets import make_dataset
 from habitat.utils.visualizations.utils import observations_to_image
-from baselines.common.environments import NavRLEnv
-from baselines.common.utils import images_to_video_with_audio
-from baselines.config.default import get_config
+from av_nav.common.environments import NavRLEnv
+from av_nav.common.utils import images_to_video_with_audio
+from av_nav.config.default import get_config
 
 
 def draw_top_down_map(info):
@@ -188,7 +188,7 @@ def main():
         "--exp-config",
         type=str,
         # required=True,
-        default='baselines/config/audiogoal_rgb_demo.yaml',
+        default='av_nav/config/audiogoal_rgb_demo.yaml',
         help="path to config yaml containing info about experiment",
     )
     parser.add_argument(

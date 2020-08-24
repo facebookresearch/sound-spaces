@@ -6,7 +6,6 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-from baselines.common.base_trainer import BaseRLTrainer, BaseTrainer
-from baselines.rl.ppo.ppo_trainer import PPOTrainer, RolloutStorage
+from av_nav.rl.ppo.ppo_trainer import PPOTrainer, RolloutStorage
 
 __all__ = ["BaseTrainer", "BaseRLTrainer", "PPOTrainer", "RolloutStorage"]

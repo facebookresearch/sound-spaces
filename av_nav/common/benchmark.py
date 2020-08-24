@@ -21,7 +21,7 @@ from tqdm import tqdm
 from habitat import Config
 from habitat.core.agent import Agent
 # from habitat.core.env import Env
-from baselines.common.environments import NavRLEnv
+from av_nav.common.environments import NavRLEnv
 from habitat.datasets import make_dataset
 
 

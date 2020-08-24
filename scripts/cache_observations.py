@@ -23,7 +23,7 @@ from habitat_sim.utils.common import quat_to_angle_axis, quat_to_coeffs, quat_fr
 from habitat.tasks.nav.nav import NavigationEpisode, NavigationGoal, ShortestPathPoint
 from soundspaces.task import merge_sim_episode_config
 from soundspaces.utils import load_metadata
-from baselines.config.default import get_config
+from av_nav.config.default import get_config
 
 
 class SoundSpaces(HabitatSim):
@@ -88,7 +88,7 @@ def main(dataset):
     parser.add_argument(
         "--config-path",
         type=str,
-        default='baselines/config/{}/train_telephone/pointgoal_rgb.yaml'.format(dataset)
+        default='av_nav/config/{}/train_telephone/pointgoal_rgb.yaml'.format(dataset)
     )
     parser.add_argument(
         "opts",

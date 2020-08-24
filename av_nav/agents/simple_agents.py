@@ -16,8 +16,8 @@ import numpy as np
 import habitat
 from habitat.sims.habitat_simulator.actions import HabitatSimActions
 # from habitat.config.default import get_config
-from baselines.common.benchmark import Benchmark
-from baselines.config.default import get_task_config as get_config
+from av_nav.common.benchmark import Benchmark
+from av_nav.config.default import get_task_config as get_config
 
 
 class RandomAgent(habitat.Agent):

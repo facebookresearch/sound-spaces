@@ -22,21 +22,21 @@ from numpy.linalg import norm
 
 from habitat import Config, logger
 from habitat.utils.visualizations.utils import observations_to_image
-from baselines.common.base_trainer import BaseRLTrainer
-from baselines.common.baseline_registry import baseline_registry
-from baselines.common.env_utils import construct_envs
-from baselines.common.environments import get_env_class
-from baselines.common.rollout_storage import RolloutStorage
-from baselines.common.tensorboard_utils import TensorboardWriter
-from baselines.common.utils import (
+from av_nav.common.base_trainer import BaseRLTrainer
+from av_nav.common.baseline_registry import baseline_registry
+from av_nav.common.env_utils import construct_envs
+from av_nav.common.environments import get_env_class
+from av_nav.common.rollout_storage import RolloutStorage
+from av_nav.common.tensorboard_utils import TensorboardWriter
+from av_nav.common.utils import (
     batch_obs,
     generate_video,
     linear_decay,
     plot_top_down_map,
     resize_observation
 )
-from baselines.rl.ppo.policy import PointNavBaselinePolicy
-from baselines.rl.ppo.ppo import PPO
+from av_nav.rl.ppo.policy import PointNavBaselinePolicy
+from av_nav.rl.ppo.ppo import PPO
 
 
 @baseline_registry.register_trainer(name="ppo")

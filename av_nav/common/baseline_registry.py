@@ -12,7 +12,7 @@ in habitat core intact.
 
 Import the baseline registry object using
 
-``from baselines.common.baseline_registry import baseline_registry``
+``from av_nav.common.baseline_registry import baseline_registry``
 
 Various decorators for registry different kind of classes with unique keys
 
@@ -35,7 +35,7 @@ class BaselineRegistry(Registry):
                 If None will use the name of the class.
 
         """
-        from baselines.common.base_trainer import BaseTrainer
+        from av_nav.common.base_trainer import BaseTrainer
 
         return cls._register_impl(
             "trainer", to_register, name, assert_type=BaseTrainer

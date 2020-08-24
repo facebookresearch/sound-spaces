@@ -11,10 +11,10 @@ import torch
 import torch.nn as nn
 from torchsummary import summary
 
-from baselines.common.utils import CategoricalNet
-from baselines.rl.models.rnn_state_encoder import RNNStateEncoder
-from baselines.rl.models.visual_cnn import VisualCNN
-from baselines.rl.models.audio_cnn import AudioCNN
+from av_nav.common.utils import CategoricalNet
+from av_nav.rl.models.rnn_state_encoder import RNNStateEncoder
+from av_nav.rl.models.visual_cnn import VisualCNN
+from av_nav.rl.models.audio_cnn import AudioCNN
 
 DUAL_GOAL_DELIMITER = ','
 

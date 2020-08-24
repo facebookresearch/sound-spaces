@@ -15,8 +15,8 @@ warnings.filterwarnings('ignore', category=UserWarning)
 import tensorflow as tf
 import torch
 
-from baselines.common.baseline_registry import baseline_registry
-from baselines.config.default import get_config
+from av_nav.common.baseline_registry import baseline_registry
+from av_nav.config.default import get_config
 
 
 def main():
@@ -32,7 +32,7 @@ def main():
         "--exp-config",
         type=str,
         # required=True,
-        default='baselines/config/pointgoal_rgb.yaml',
+        default='av_nav/config/pointgoal_rgb.yaml',
         help="path to config yaml containing info about experiment",
     )
     parser.add_argument(

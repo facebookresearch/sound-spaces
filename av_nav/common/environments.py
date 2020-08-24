@@ -18,7 +18,7 @@ import logging
 
 import habitat
 from habitat import Config, Dataset
-from baselines.common.baseline_registry import baseline_registry
+from av_nav.common.baseline_registry import baseline_registry
 
 
 def get_env_class(env_name: str) -> Type[habitat.RLEnv]:

@@ -12,7 +12,7 @@ setup(
     version='0.0.1',
     packages=[
         'soundspaces',
-        'baselines'
+        'av_nav'
     ],
     install_requires=[
         'habitat==0.1.5',
