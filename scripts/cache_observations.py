@@ -21,7 +21,7 @@ from habitat.core.simulator import AgentState, ShortestPathPoint
 from habitat.sims.habitat_simulator.habitat_simulator import HabitatSim
 from habitat_sim.utils.common import quat_to_angle_axis, quat_to_coeffs, quat_from_angle_axis, quat_from_coeffs
 from habitat.tasks.nav.nav import NavigationEpisode, NavigationGoal, ShortestPathPoint
-from soundspaces.task import merge_sim_episode_config
+from soundspaces.tasks.audionav_task import merge_sim_episode_config
 from soundspaces.utils import load_metadata
 from av_nav.config.default import get_config
 
