@@ -335,9 +335,6 @@ class SoundSpaces(HabitatSim):
         _base_orientation = 270
         return (_base_orientation - self._rotation_angle) % 360
 
-    def get_audio_file(self):
-        return self._audio_file
-
     @property
     def azimuth_angle(self):
         # this is the angle used to index the binaural audio files

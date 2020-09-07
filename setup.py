@@ -41,7 +41,8 @@ setup(
         'notebook',
         'moviepy',
         'tensorflow',
-        'astropy'
+        'astropy',
+        'scikit-image'
     ],
     extras_require={
         'test': [
