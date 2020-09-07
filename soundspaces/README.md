@@ -18,7 +18,7 @@ wget http://dl.fbaipublicfiles.com/SoundSpaces/metadata.tar.xz && tar xvf metada
 wget http://dl.fbaipublicfiles.com/SoundSpaces/sounds.tar.xz && tar xvf sounds.tar.xz
 wget http://dl.fbaipublicfiles.com/SoundSpaces/datasets.tar.xz && tar xvf datasets.tar.xz
 ```
-4. (Optional) Download the full ambisonic and binaural RIRs data by running the following script in the root directory. Remember to first back up the downloaded bianural RIR data.
+4. (Optional) Download the full ambisonic (3.6T for Matterport) and binaural (682G for Matterport and 81G for Replica) RIRs data by running the following script in the root directory. Remember to first back up the downloaded bianural RIR data.
 ```
 python scripts/download_data.py --dataset mp3d --rir-type binaural_rirs
 python scripts/download_data.py --dataset replica --rir-type binaural_rirs
