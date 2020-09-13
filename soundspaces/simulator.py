@@ -360,12 +360,22 @@ class SoundSpaces(HabitatSim):
             if sr != self.config.AUDIO.RIR_SAMPLING_RATE:
                 audio_data = scipy.signal.resample(audio_data, self.config.AUDIO.RIR_SAMPLING_RATE)
             self._source_sound_dict[sound] = audio_data
+    
+    def _compute_euclidean_distance_between_sr_locations(self):
+        p1 = self.graph.nodes[self._receiver_position_index]['point']
+        p2 = self.graph.nodes[self._source_position_index]['point']
+        d = np.sqrt((p1[0] - p2[0])**2 + (p1[2] - p2[2])**2)
+        return d
 
     def _compute_audiogoal(self):
         binaural_rir_file = os.path.join(self.binaural_rir_dir, str(self.azimuth_angle), '{}_{}.wav'.format(
             self._receiver_position_index, self._source_position_index))
         try:
             sampling_freq, binaural_rir = wavfile.read(binaural_rir_file)  # float32
+            # pad RIR with zeros to take initial delays into account
+            num_delay_sample = int(self._compute_euclidean_distance_between_sr_locations() / 343.0 * sampling_freq)
+            binaural_rir = np.pad(binaural_rir, ((num_delay_sample, 0), (0, 0)))
+
         except ValueError:
             logging.warning("{} file is not readable".format(binaural_rir_file))
             binaural_rir = np.zeros((self.config.AUDIO.RIR_SAMPLING_RATE, 2)).astype(np.float32)
