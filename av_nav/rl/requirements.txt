@@ -1,4 +1,4 @@
 torch==1.1.0
 # full tensorflow required for tensorboard video support
-tensorflow==1.15.2
+tensorflow==1.15.4
 tb-nightly
