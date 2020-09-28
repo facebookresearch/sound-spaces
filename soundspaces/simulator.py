@@ -372,9 +372,9 @@ class SoundSpaces(HabitatSim):
             self._receiver_position_index, self._source_position_index))
         try:
             sampling_freq, binaural_rir = wavfile.read(binaural_rir_file)  # float32
-            # pad RIR with zeros to take initial delays into account
-            num_delay_sample = int(self._compute_euclidean_distance_between_sr_locations() / 343.0 * sampling_freq)
-            binaural_rir = np.pad(binaural_rir, ((num_delay_sample, 0), (0, 0)))
+            # # pad RIR with zeros to take initial delays into account
+            # num_delay_sample = int(self._compute_euclidean_distance_between_sr_locations() / 343.0 * sampling_freq)
+            # binaural_rir = np.pad(binaural_rir, ((num_delay_sample, 0), (0, 0)))
 
         except ValueError:
             logging.warning("{} file is not readable".format(binaural_rir_file))
