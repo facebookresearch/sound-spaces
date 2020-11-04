@@ -1,4 +1,5 @@
-## SoundSpaces: Audio-Visual Navigation in 3D Environments
+![](scripts/logo.png)
+--------------------------------------------------------------------------------
 SoundSpaces is a realistic acoustic simulation platform for audio-visual embodied AI research. From audio-visual navigation and audio-visual exploration to echolocation, this platform expands embodied vision research to a broader scope of topics.
 
 ## Introduction Video
