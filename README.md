@@ -11,7 +11,7 @@ Presentation videos can be found at our [project page](http://vision.cs.utexas.e
 Moving around in the world is naturally a multisensory experience, but today's embodied agents are deaf---restricted to solely their visual perception of the environment. We introduce audio-visual navigation for complex, acoustically and visually realistic 3D environments. We further build *SoundSpaces*: a first-of-its-kind dataset of audio renderings based on geometrical acoustic simulations for two sets of publicly available 3D environments (Matterport3D and Replica), and we instrument [Habitat](https://github.com/facebookresearch/habitat-api/blob/master/README.md) to support the new sensor, making it possible to insert arbitrary sound sources in an array of real-world scanned environments.
 
 ## Citing SoundSpaces
-If you use the Habitat platform in your research, please cite the following [paper](https://arxiv.org/pdf/1912.11474.pdf):
+If you use the SoundSpaces platform in your research, please cite the following [paper](https://arxiv.org/pdf/1912.11474.pdf):
 ```
 @inproceedings{chen20soundspaces,
   title     =     {SoundSpaces: Audio-Visual Navigaton in 3D Environments,
