@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Install conda
-RUN curl -o ~/miniconda.sh -O  https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  &&\
+RUN curl -sL "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh" > ~/"miniconda.sh" &&\
     chmod +x ~/miniconda.sh &&\
     ~/miniconda.sh -b -p /opt/conda &&\
     rm ~/miniconda.sh &&\
@@ -49,7 +49,7 @@ RUN git clone --branch stable https://github.com/facebookresearch/habitat-lab.gi
 RUN /bin/bash -c ". activate soundspaces; cd habitat-lab; git checkout v0.1.5; pip install -e ."
 
 # Install challenge specific habitat-lab
-RUN git clone --branch stable https://github.com/facebookresearch/sound-spaces.git
+RUN git clone https://github.com/facebookresearch/sound-spaces.git
 RUN /bin/bash -c ". activate soundspaces; cd sound-spaces;pip install -e ."
 
 # Silence habitat-sim logs

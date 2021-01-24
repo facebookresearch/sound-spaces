@@ -15,8 +15,8 @@ setup(
         'av_nav'
     ],
     install_requires=[
-        'habitat==0.1.5',
-        'habitat-sim==0.1.5',
+        'habitat',
+        'habitat-sim',
         'torch',
         'gym==0.10.9',
         'numpy>=1.16.1',
@@ -34,6 +34,7 @@ setup(
         'getch',
         'matplotlib',
         'librosa',
+        'numba==0.48'
         'torchsummary',
         'gitpython',
         'networkx',
