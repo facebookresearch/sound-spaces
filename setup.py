@@ -34,7 +34,7 @@ setup(
         'getch',
         'matplotlib',
         'librosa',
-        'numba==0.48'
+        'numba==0.48',
         'torchsummary',
         'gitpython',
         'networkx',

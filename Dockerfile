@@ -49,7 +49,7 @@ RUN git clone --branch stable https://github.com/facebookresearch/habitat-lab.gi
 RUN /bin/bash -c ". activate soundspaces; cd habitat-lab; git checkout v0.1.5; pip install -e ."
 
 # Install challenge specific habitat-lab
-RUN git clone https://github.com/facebookresearch/sound-spaces.git
+RUN git clone --branch cca-dev https://github.com/facebookresearch/sound-spaces.git
 RUN /bin/bash -c ". activate soundspaces; cd sound-spaces;pip install -e ."
 
 # Silence habitat-sim logs
