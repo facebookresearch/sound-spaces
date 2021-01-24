@@ -5,3 +5,5 @@ data_
 __pycache__
 my_scripts/
 logs/
+agent.py
+configs/challenge_audionav.local.rgbd.yaml

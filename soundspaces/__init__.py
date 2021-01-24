@@ -11,3 +11,11 @@ from soundspaces.tasks.audionav_task import AudioNavigationTask
 from soundspaces.tasks.audionav_task import AudioGoalSensor
 from soundspaces.tasks.audionav_task import SpectrogramSensor
 from soundspaces.tasks.audionav_task import Collision
+from soundspaces.challenge import Challenge
+from soundspaces.benchmark import Benchmark
+
+
+__all__ = [
+    "Challenge",
+    "Benchmark"
+]
