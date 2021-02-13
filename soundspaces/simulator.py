@@ -87,6 +87,7 @@ class SoundSpaces(HabitatSim):
         self._frame_cache = dict()
         self._audiogoal_cache = dict()
         self._spectrogram_cache = dict()
+        self._egomap_cache = defaultdict(dict)
         self._scene_observations = None
         self._episode_step_count = None
         self._is_episode_active = None
@@ -96,7 +97,7 @@ class SoundSpaces(HabitatSim):
         self.points, self.graph = load_metadata(self.metadata_dir)
         for node in self.graph.nodes():
             self._position_to_index_mapping[self.position_encoding(self.graph.nodes()[node]['point'])] = node
-        self._load_sound_sources()
+        self._load_source_sounds()
         logging.info('Current scene: {} and sound: {}'.format(self.current_scene_name, self._current_sound))
 
         if self.config.USE_RENDERED_OBSERVATIONS:
@@ -154,9 +155,9 @@ class SoundSpaces(HabitatSim):
 
     def reconfigure(self, config: Config) -> None:
         self.config = config
-        is_same_sound = config.AGENT_0.SOUND == self._current_sound
+        is_same_sound = config.AGENT_0.SOUND_ID == self._current_sound
         if not is_same_sound:
-            self._current_sound = self.config.AGENT_0.SOUND
+            self._current_sound = self.config.AGENT_0.SOUND_ID
 
         is_same_scene = config.SCENE == self._current_scene
         if not is_same_scene:
@@ -350,16 +351,15 @@ class SoundSpaces(HabitatSim):
         audio = self.get_current_audio_observation()
         observations.update({"audio": audio})
 
-    def _load_sound_sources(self):
+    def _load_source_sounds(self):
         # load all mono files at once
         sound_files = os.listdir(self.source_sound_dir)
         for sound_file in sound_files:
-            sound = sound_file.split('.')[0]
             sr, audio_data = wavfile.read(os.path.join(self.source_sound_dir, sound_file))
             assert sr == 44100
             if sr != self.config.AUDIO.RIR_SAMPLING_RATE:
                 audio_data = scipy.signal.resample(audio_data, self.config.AUDIO.RIR_SAMPLING_RATE)
-            self._source_sound_dict[sound] = audio_data
+            self._source_sound_dict[sound_file] = audio_data
     
     def _compute_euclidean_distance_between_sr_locations(self):
         p1 = self.graph.nodes[self._receiver_position_index]['point']
@@ -391,29 +391,32 @@ class SoundSpaces(HabitatSim):
         return audiogoal
 
     def get_current_audiogoal_observation(self):
-        join_index = (self._source_position_index, self._receiver_position_index, self.azimuth_angle)
-        if join_index not in self._audiogoal_cache:
-            self._audiogoal_cache[join_index] = self._compute_audiogoal()
+        sr_index = (self._source_position_index, self._receiver_position_index, self.azimuth_angle)
+        if sr_index not in self._audiogoal_cache:
+            self._audiogoal_cache[sr_index] = self._compute_audiogoal()
 
-        return self._audiogoal_cache[join_index]
+        return self._audiogoal_cache[sr_index]
 
     def get_current_spectrogram_observation(self, audiogoal2spectrogram):
         sr_index = (self._source_position_index, self._receiver_position_index)
-        join_index = sr_index + (self.azimuth_angle,)
-        if join_index not in self._spectrogram_cache:
+        sr_index = sr_index + (self.azimuth_angle,)
+        if sr_index not in self._spectrogram_cache:
             audiogoal = self._compute_audiogoal()
             spectrogram = audiogoal2spectrogram(audiogoal)
-            self._spectrogram_cache[join_index] = spectrogram
+            self._spectrogram_cache[sr_index] = spectrogram
 
-        return self._spectrogram_cache[join_index]
+        return self._spectrogram_cache[sr_index]
 
-    def geodesic_distance(self, position_a, position_b):
-        index_a = self._position_to_index(position_a)
-        index_b = self._position_to_index(position_b)
-        assert index_a is not None and index_b is not None
-        steps = nx.shortest_path_length(self.graph, index_a, index_b) * self.config.GRID_SIZE
+    def geodesic_distance(self, position_a, position_bs, episode=None):
+        distances = []
+        for position_b in position_bs:
+            index_a = self._position_to_index(position_a)
+            index_b = self._position_to_index(position_b)
+            assert index_a is not None and index_b is not None
+            path_length = nx.shortest_path_length(self.graph, index_a, index_b) * self.config.GRID_SIZE
+            distances.append(path_length)
 
-        return steps
+        return min(distances)
 
     def get_straight_shortest_path_points(self, position_a, position_b):
         index_a = self._position_to_index(position_a)
@@ -429,3 +432,13 @@ class SoundSpaces(HabitatSim):
     @property
     def previous_step_collided(self):
         return self._previous_step_collided
+
+    def get_egomap_observation(self):
+        joint_index = (self._receiver_position_index, self._rotation_angle)
+        if joint_index in self._egomap_cache[self._current_scene]:
+            return self._egomap_cache[self._current_scene][joint_index]
+        else:
+            return None
+
+    def cache_egomap_observation(self, egomap):
+        self._egomap_cache[self._current_scene][(self._receiver_position_index, self._rotation_angle)] = egomap

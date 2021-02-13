@@ -24,7 +24,7 @@ CONFIG_FILE_SEPARATOR = ","
 # -----------------------------------------------------------------------------
 _C = CN()
 _C.SEED = 0
-_C.BASE_TASK_CONFIG_PATH = "configs/mp3d/audiogoal.yaml"
+_C.BASE_TASK_CONFIG_PATH = "configs/tasks/pointgoal.yaml"
 _C.TASK_CONFIG = CN()  # task_config will be stored as a config node
 _C.CMD_TRAILING_OPTS = []  # store command line options as list of strings
 _C.TRAINER_NAME = "ppo"
@@ -92,7 +92,6 @@ _C.RL.PPO.reward_window_size = 50
 # -----------------------------------------------------------------------------
 _TC = habitat.get_config()
 _TC.defrost()
-_TC.TASK.POSSIBLE_ACTIONS = ["STOP", "MOVE_FORWARD", "TURN_LEFT", "TURN_RIGHT"]
 # -----------------------------------------------------------------------------
 # AUDIOGOAL_SENSOR
 # -----------------------------------------------------------------------------

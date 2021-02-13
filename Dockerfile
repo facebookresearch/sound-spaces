@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libx11-dev \
     libomp-dev \
     libegl1-mesa-dev \
+    libsndfile1 \
     pkg-config \
     wget \
     zip \

@@ -12,7 +12,8 @@ setup(
     version='0.0.1',
     packages=[
         'soundspaces',
-        'av_nav'
+        'av_nav',
+        'av_wan',
     ],
     install_requires=[
         'habitat',

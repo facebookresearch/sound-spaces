@@ -9,21 +9,18 @@ import os
 import argparse
 import logging
 import pickle
-import sys
 from collections import defaultdict
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 import habitat_sim
-from habitat.core.registry import registry
-from habitat.core.simulator import AgentState, ShortestPathPoint
+from habitat.core.simulator import AgentState
 from habitat.sims.habitat_simulator.habitat_simulator import HabitatSim
 from habitat_sim.utils.common import quat_to_angle_axis, quat_to_coeffs, quat_from_angle_axis, quat_from_coeffs
 from habitat.tasks.nav.nav import NavigationEpisode, NavigationGoal, ShortestPathPoint
 from soundspaces.tasks.audionav_task import merge_sim_episode_config
 from soundspaces.utils import load_metadata
-from av_nav.config.default import get_config
+from av_nav.config import get_config
 
 
 class SoundSpaces(HabitatSim):
@@ -88,7 +85,7 @@ def main(dataset):
     parser.add_argument(
         "--config-path",
         type=str,
-        default='av_nav/config/{}/train_telephone/pointgoal_rgb.yaml'.format(dataset)
+        default='baselines/config/{}/train_telephone/pointgoal_rgb.yaml'.format(dataset)
     )
     parser.add_argument(
         "opts",

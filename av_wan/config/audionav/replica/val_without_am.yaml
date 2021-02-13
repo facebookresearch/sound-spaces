@@ -1,0 +1,13 @@
+BASE_TASK_CONFIG_PATH: "configs/audionav/av_wan/replica/audiogoal_without_am.yaml"
+NUM_PROCESSES: 1
+SENSORS: ["DEPTH_SENSOR"]
+TEST_EPISODE_COUNT: 500
+VIDEO_OPTION: []
+VISUALIZATION_OPTION: []
+ENCODE_DEPTH: False
+USE_SYNC_VECENV: True
+
+
+EVAL:
+  SPLIT: "val_telephone"
+  USE_CKPT_CONFIG: True

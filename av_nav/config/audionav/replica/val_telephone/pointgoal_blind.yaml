@@ -1,0 +1,10 @@
+BASE_TASK_CONFIG_PATH: "configs/audionav/av_nav/replica/pointgoal.yaml"
+NUM_PROCESSES: 1
+SENSORS: []
+TEST_EPISODE_COUNT: 500
+VIDEO_OPTION: []
+VISUALIZATION_OPTION: []
+
+EVAL:
+  SPLIT: "val_telephone"
+  USE_CKPT_CONFIG: True
