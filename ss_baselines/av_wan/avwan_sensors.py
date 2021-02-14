@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+
+# Copyright (c) Facebook, Inc. and its affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
 from typing import Any, Type, Union
 import logging
 
@@ -56,34 +64,6 @@ class ActionMap(MapPlaceHolder):
 class AcousticMap(MapPlaceHolder):
     def _get_uuid(self, *args: Any, **kwargs: Any):
         return "am"
-
-
-@registry.register_sensor(name="Direction")
-class Direction(Sensor):
-    def __init__(
-        self, sim: Union[Simulator, Config], config: Config, *args: Any, **kwargs: Any
-    ):
-        super().__init__(config=config)
-        self._sim = sim
-
-    def _get_uuid(self, *args: Any, **kwargs: Any):
-        return "direction"
-
-    def _get_sensor_type(self, *args: Any, **kwargs: Any):
-        return SensorTypes.COLOR
-
-    def _get_observation_space(self, *args: Any, **kwargs: Any):
-        return spaces.Box(
-            low=0,
-            high=1,
-            shape=(1,),
-            dtype=bool
-        )
-
-    def get_observation(
-        self, *args: Any, observations, episode: Episode, **kwargs: Any
-    ) -> object:
-        raise NotImplementedError
 
 
 @registry.register_sensor(name="Intensity")

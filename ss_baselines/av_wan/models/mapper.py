@@ -7,16 +7,11 @@
 # LICENSE file in the root directory of this source tree.
 
 from typing import Tuple
-import os
 import logging
 
 import torch.nn as nn
 import torch
-from torch.utils.data import Dataset
 import numpy as np
-import networkx as nx
-import matplotlib.pyplot as plt
-from matplotlib import colors
 
 from habitat.sims.habitat_simulator.actions import HabitatSimActions
 
@@ -106,9 +101,6 @@ class Mapper(nn.Module):
         if logging.root.level == logging.DEBUG:
             self._prev_geometric_map = np.copy(self._geometric_map)
 
-        # TODO: update the map using bayes rules
-        # https://www.cs.cmu.edu/~motionplanning/lecture/Chap9-Bayesian-Mapping_howie.pdf
-
         if prev_action == HabitatSimActions.MOVE_FORWARD:
             self._x += int(self._stride * np.cos(np.deg2rad(self._orientation)))
             self._y += int(self._stride * np.sin(np.deg2rad(self._orientation)))
@@ -131,7 +123,6 @@ class Mapper(nn.Module):
         bottom = top - ego_map.shape[0]
         rotated_geometric_map[bottom: top, left: right, :] = \
             np.logical_or(rotated_geometric_map[bottom: top, left: right, :] > 0.5, ego_map > 0.5)
-        # self._geometric_map = rotate_map(rotated_geometric_map, self._rotation, create_copy=False)
 
         # update acoustic map
         if self._use_acoustic_map:
@@ -353,56 +344,3 @@ def transform_coordinates(x: int, y: int, rotation: int, width: int, height: int
         new_y = x
 
     return new_x, new_y
-
-
-def plot(obs=None, gt_om=None, predicted_om=None, global_om=None, display=True, output_file=None):
-    for om in [predicted_om, global_om]:
-        if om is not None:
-            om[:, :] = om > 0.5
-
-    if obs is not None:
-        if len(obs.shape) == 3 and obs.shape[2] == 1:
-            obs = np.squeeze(obs, axis=2)
-        obs_cmap = 'gray' if len(obs.shape) == 2 else None
-    if all([x is not None for x in [obs, gt_om, predicted_om]]):
-        fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(10, 6))
-        ax1.imshow(obs, cmap=obs_cmap)
-        cmap = colors.ListedColormap(['white', 'grey'])
-        ax2.set_aspect('equal')
-        ax2.pcolor(gt_om, cmap=cmap, edgecolors='k')
-        ax3.set_aspect('equal')
-        ax3.pcolor(predicted_om, cmap=cmap, edgecolors='k')
-        ax2.invert_yaxis()
-        ax3.invert_yaxis()
-        ax3.axvline(x=5, color='black', linewidth=2)
-        ax3.axvline(x=10, color='black', linewidth=2)
-        ax3.axvline(x=15, color='black', linewidth=2)
-        ax3.axvline(x=20, color='black', linewidth=2)
-        ax3.axhline(y=5, color='black', linewidth=2)
-        ax3.axhline(y=10, color='black', linewidth=2)
-        ax3.axhline(y=15, color='black', linewidth=2)
-        ax3.axhline(y=20, color='black', linewidth=2)
-    elif all([x is not None for x in [global_om]]):
-        fig, ax = plt.subplots(1, 1, figsize=(10, 10))
-        cmap = colors.ListedColormap(['white', 'grey'])
-        ax.set_aspect('equal')
-        ax.pcolor(global_om, cmap=cmap, edgecolors='k')
-        ax.invert_yaxis()
-    elif all([x is not None for x in [obs, predicted_om]]):
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 6))
-        ax1.imshow(obs, cmap=obs_cmap)
-        cmap = colors.ListedColormap(['white', 'grey'])
-        ax2.set_aspect('equal')
-        ax2.pcolor(predicted_om, cmap=cmap, edgecolors='k')
-        ax2.invert_yaxis()
-    else:
-        raise ValueError('Arguments invalid')
-
-    if display:
-        plt.show()
-    elif output_file is not None:
-        plt.savefig(output_file)
-        plt.close()
-    else:
-        fig.canvas.draw()
-        return fig

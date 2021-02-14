@@ -1,4 +1,12 @@
-from typing import Optional, Type
+#!/usr/bin/env python3
+
+# Copyright (c) Facebook, Inc. and its affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
+from typing import Optional
 import logging
 
 import numpy as np
@@ -25,14 +33,12 @@ class MapNavEnv(habitat.RLEnv):
         super().__init__(self._core_env_config, dataset)
 
         self.planner = Planner(model_dir=self._config.MODEL_DIR,
-                               plot_map=self._config.VISUALIZE_PLANNER,
                                use_acoustic_map='ACOUSTIC_MAP' in config.TASK_CONFIG.TASK.SENSORS,
                                masking=self._config.MASKING,
                                task_config=config.TASK_CONFIG
                                )
         torch.set_num_threads(1)
 
-    # @profile
     def reset(self):
         self._previous_action = None
 
@@ -57,7 +63,6 @@ class MapNavEnv(habitat.RLEnv):
         done = False
         reaching_waypoint = False
         cant_reach_waypoint = False
-        intermediate_obs = list()
         if len(self._config.VIDEO_OPTION) > 0:
             rgb_frames = list()
             audios = list()
@@ -68,14 +73,7 @@ class MapNavEnv(habitat.RLEnv):
                 break
             action = self.planner.plan(observation, goal, stop=stop)
             observation, reward, done, info = super().step({"action": action})
-            intermediate_obs.append(observation)
             if len(self._config.VIDEO_OPTION) > 0:
-                if self._config.TASK_CONFIG.SIMULATOR.CONTINUOUS_VIEW_CHANGE and 'intermediate' in observation:
-                    for obs in observation['intermediate']:
-                        frame = observations_to_image(obs, info)
-                        rgb_frames.append(frame)
-                    del observation['intermediate']
-
                 if "rgb" not in observation:
                     observation["rgb"] = np.zeros((self.config.DISPLAY_RESOLUTION,
                                                    self.config.DISPLAY_RESOLUTION, 3))
@@ -100,7 +98,6 @@ class MapNavEnv(habitat.RLEnv):
         self._previous_observation = observation
         info['reaching_waypoint'] = done or reaching_waypoint
         info['cant_reach_waypoint'] = cant_reach_waypoint
-        info['intermediate_obs'] = intermediate_obs
         if len(self._config.VIDEO_OPTION) > 0:
             assert len(rgb_frames) != 0
             info['rgb_frames'] = rgb_frames

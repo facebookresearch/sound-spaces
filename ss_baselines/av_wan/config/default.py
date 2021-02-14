@@ -16,15 +16,7 @@ from habitat import get_config as get_task_config
 from habitat.config import Config as CN
 from habitat.config.default import SIMULATOR_SENSOR
 import habitat
-# import yacs.config
-#
-#
-# class Config(yacs.config.CfgNode):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs, new_allowed=False)
-#
-#
-# CN = Config
+
 DEFAULT_CONFIG_DIR = "configs/"
 CONFIG_FILE_SEPARATOR = ","
 # -----------------------------------------------------------------------------
@@ -58,7 +50,6 @@ _C.USE_SYNC_VECENV = False
 _C.ENCODE_RGB = True
 _C.ENCODE_DEPTH = True
 _C.DEBUG = False
-_C.VISUALIZE_PLANNER = False
 _C.USE_LAST_CKPT = False
 _C.PREDICTION_INTERVAL = 10
 _C.DATASET_FILTER = []
@@ -133,14 +124,10 @@ _TC.SIMULATOR.USE_RENDERED_OBSERVATIONS = True
 _TC.SIMULATOR.SCENE_OBSERVATION_DIR = 'data/scene_observations'
 _TC.SIMULATOR.AUDIO = CN()
 _TC.SIMULATOR.AUDIO.SCENE = ""
-_TC.SIMULATOR.AUDIO.AUDIOGOAL_CALCULATION = "v0"  # v0,v1,v2
 _TC.SIMULATOR.AUDIO.BINAURAL_RIR_DIR = "data/binaural_rirs"
 _TC.SIMULATOR.AUDIO.RIR_SAMPLING_RATE = 44100
 _TC.SIMULATOR.AUDIO.SOURCE_SOUND_DIR = "data/sounds/1s_all"
 _TC.SIMULATOR.AUDIO.METADATA_DIR = "data/metadata"
-_TC.SIMULATOR.AUDIO.LOAD_DIRECTION_DATA = False
-_TC.SIMULATOR.AUDIO.DIRECTION_DIR = "data/directions_from_ambisonics"
-_TC.SIMULATOR.AUDIO.DIRECTION_FILE = 'directions.pkl'
 _TC.SIMULATOR.AUDIO.POINTS_FILE = 'points.txt'
 _TC.SIMULATOR.AUDIO.GRAPH_FILE = 'graph.pkl'
 # -----------------------------------------------------------------------------
@@ -159,7 +146,7 @@ _TC.TASK.NORMALIZED_DISTANCE_TO_GOAL.TYPE = "NormalizedDistanceToGoal"
 # -----------------------------------------------------------------------------
 _TC.DATASET.VERSION = 'v1'
 # -----------------------------------------------------------------------------
-# Depth map projection
+# Egocentric occupancy map projected from depth image
 # -----------------------------------------------------------------------------
 _TC.TASK.EGOMAP_SENSOR = SIMULATOR_SENSOR.clone()
 _TC.TASK.EGOMAP_SENSOR.TYPE = "EgoMap"
@@ -167,7 +154,7 @@ _TC.TASK.EGOMAP_SENSOR.MAP_SIZE = 31
 _TC.TASK.EGOMAP_SENSOR.MAP_RESOLUTION = 0.1
 _TC.TASK.EGOMAP_SENSOR.HEIGHT_THRESH = (0.5, 2.0)
 # -----------------------------------------------------------------------------
-# Dummy global map placeholder
+# Global map placeholder
 # -----------------------------------------------------------------------------
 _TC.TASK.GEOMETRIC_MAP = SIMULATOR_SENSOR.clone()
 _TC.TASK.GEOMETRIC_MAP.TYPE = "GeometricMap"
@@ -176,7 +163,7 @@ _TC.TASK.GEOMETRIC_MAP.INTERNAL_MAP_SIZE = 500
 _TC.TASK.GEOMETRIC_MAP.MAP_RESOLUTION = 0.1
 _TC.TASK.GEOMETRIC_MAP.NUM_CHANNEL = 2
 # -----------------------------------------------------------------------------
-# Dummy global map placeholder
+# Acoustic map placeholder
 # -----------------------------------------------------------------------------
 _TC.TASK.ACOUSTIC_MAP = SIMULATOR_SENSOR.clone()
 _TC.TASK.ACOUSTIC_MAP.TYPE = "AcousticMap"
@@ -185,7 +172,7 @@ _TC.TASK.ACOUSTIC_MAP.MAP_RESOLUTION = 0.5
 _TC.TASK.ACOUSTIC_MAP.NUM_CHANNEL = 1
 _TC.TASK.ACOUSTIC_MAP.ENCODING = "average_intensity"
 # -----------------------------------------------------------------------------
-# Dummy local occupancy map placeholder
+# Local occupancy map placeholder
 # -----------------------------------------------------------------------------
 _TC.TASK.ACTION_MAP = SIMULATOR_SENSOR.clone()
 _TC.TASK.ACTION_MAP.TYPE = "ActionMap"
@@ -198,24 +185,20 @@ _TC.TASK.ACTION_MAP.NUM_CHANNEL = 1
 _TC.TASK.COLLISION = SIMULATOR_SENSOR.clone()
 _TC.TASK.COLLISION.TYPE = "Collision"
 # -----------------------------------------------------------------------------
-# Direction estimated from ambisonic
-# -----------------------------------------------------------------------------
-_TC.TASK.DIRECTION = SIMULATOR_SENSOR.clone()
-_TC.TASK.DIRECTION.TYPE = "Direction"
-# -----------------------------------------------------------------------------
-# Intensity estimated from ambisonic
+# Intensity value placeholder
 # -----------------------------------------------------------------------------
 _TC.TASK.INTENSITY = SIMULATOR_SENSOR.clone()
 _TC.TASK.INTENSITY.TYPE = "Intensity"
 # -----------------------------------------------------------------------------
-# NumberOfAction Measure
+# Number of action metric
 # -----------------------------------------------------------------------------
 _TC.TASK.NUM_ACTION = CN()
 _TC.TASK.NUM_ACTION.TYPE = "NA"
+# -----------------------------------------------------------------------------
+# Success normalized by number of action metric
+# -----------------------------------------------------------------------------
 _TC.TASK.SUCCESS_WEIGHTED_BY_NUM_ACTION = CN()
 _TC.TASK.SUCCESS_WEIGHTED_BY_NUM_ACTION.TYPE = "SNA"
-_TC.TASK.SUCCESS_WHEN_SILENT = CN()
-_TC.TASK.SUCCESS_WHEN_SILENT.TYPE = "SWS"
 
 
 def merge_from_path(config, config_paths):

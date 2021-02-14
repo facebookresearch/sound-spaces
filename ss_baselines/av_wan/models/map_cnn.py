@@ -11,12 +11,11 @@ import torch
 import torch.nn as nn
 
 from ss_baselines.common.utils import Flatten
+from ss_baselines.av_nav.models.visual_cnn import conv_output_dim, layer_init
 
 
 class MapCNN(nn.Module):
-    r"""A Simple 3-Conv CNN followed by a fully connected layer
-
-    Takes in observations and produces an embedding of the rgb and/or depth components
+    r"""A Simple CNN for processing map inputs (acoustic map or geometric map)
 
     Args:
         observation_space: The observation_space of the agent
@@ -27,7 +26,6 @@ class MapCNN(nn.Module):
         super().__init__()
         self._map_type = map_type
         self._n_input_gm = observation_space.spaces[map_type].shape[2]
-
 
         cnn_dims = np.array(
             observation_space.spaces[map_type].shape[:2], dtype=np.float32
@@ -56,7 +54,7 @@ class MapCNN(nn.Module):
         for kernel_size, stride in zip(
             self._cnn_layers_kernel_size, self._cnn_layers_stride
         ):
-            cnn_dims = self._conv_output_dim(
+            cnn_dims = conv_output_dim(
                 dimension=cnn_dims,
                 padding=np.array([0, 0], dtype=np.float32),
                 dilation=np.array([1, 1], dtype=np.float32),
@@ -91,45 +89,7 @@ class MapCNN(nn.Module):
             nn.ReLU(True),
         )
 
-        self.layer_init()
-
-    def _conv_output_dim(
-        self, dimension, padding, dilation, kernel_size, stride
-    ):
-        r"""Calculates the output height and width based on the input
-        height and width to the convolution layer.
-
-        ref: https://pytorch.org/docs/master/nn.html#torch.nn.Conv2d
-        """
-        assert len(dimension) == 2
-        out_dimension = []
-        for i in range(len(dimension)):
-            out_dimension.append(
-                int(
-                    np.floor(
-                        (
-                            (
-                                dimension[i]
-                                + 2 * padding[i]
-                                - dilation[i] * (kernel_size[i] - 1)
-                                - 1
-                            )
-                            / stride[i]
-                        )
-                        + 1
-                    )
-                )
-            )
-        return tuple(out_dimension)
-
-    def layer_init(self):
-        for layer in self.cnn:
-            if isinstance(layer, (nn.Conv2d, nn.Linear)):
-                nn.init.kaiming_normal_(
-                    layer.weight, nn.init.calculate_gain("relu")
-                )
-                if layer.bias is not None:
-                    nn.init.constant_(layer.bias, val=0)
+        layer_init(self.cnn)
 
     def forward(self, observations):
         cnn_input = []

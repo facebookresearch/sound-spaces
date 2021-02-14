@@ -12,7 +12,6 @@ import logging
 import torch
 import torch.nn as nn
 from torchsummary import summary
-import numpy as np
 
 from ss_baselines.common.utils import CategoricalNetWithMask
 from ss_baselines.av_nav.models.rnn_state_encoder import RNNStateEncoder

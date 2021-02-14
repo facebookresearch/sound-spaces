@@ -45,7 +45,6 @@ class NavRLEnv(habitat.RLEnv):
         self._success_distance = self._core_env_config.TASK.SUCCESS_DISTANCE
         super().__init__(self._core_env_config, dataset)
 
-    # @profile
     def reset(self):
         self._previous_action = None
 
