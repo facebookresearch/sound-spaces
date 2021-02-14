@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 # Copyright (c) Facebook, Inc. and its affiliates.
-# This source code is licensed under the MIT license found in the
+# All rights reserved.
+
+# This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
 import glob
@@ -16,13 +18,11 @@ from scipy.io import wavfile
 import torch
 import torch.nn as nn
 import torch.nn.functional as f
-from torch.distributions.multivariate_normal import MultivariateNormal
-from torch.distributions.lowrank_multivariate_normal import LowRankMultivariateNormal
 import moviepy.editor as mpy
 from moviepy.audio.AudioClip import CompositeAudioClip
 
 from habitat.utils.visualizations.utils import images_to_video
-from av_wan.common.tensorboard_utils import TensorboardWriter
+from ss_baselines.common.tensorboard_utils import TensorboardWriter
 from habitat.utils.visualizations import maps
 
 
@@ -49,6 +49,20 @@ class CustomFixedCategorical(torch.distributions.Categorical):
 
 
 class CategoricalNet(nn.Module):
+    def __init__(self, num_inputs, num_outputs):
+        super().__init__()
+
+        self.linear = nn.Linear(num_inputs, num_outputs)
+
+        nn.init.orthogonal_(self.linear.weight, gain=0.01)
+        nn.init.constant_(self.linear.bias, 0)
+
+    def forward(self, x):
+        x = self.linear(x)
+        return CustomFixedCategorical(logits=x)
+
+
+class CategoricalNetWithMask(nn.Module):
     def __init__(self, num_inputs, num_outputs, masking):
         super().__init__()
         self.masking = masking
@@ -64,56 +78,6 @@ class CategoricalNet(nn.Module):
             probs = probs * torch.reshape(action_maps, (action_maps.shape[0], -1)).float()
 
         return CustomFixedCategorical(probs=probs)
-
-
-class ContinuousDistribution(MultivariateNormal):
-    def sample(self, sample_shape=torch.Size()):
-        return super().sample(sample_shape)
-
-    def log_probs(self, actions):
-        return (
-            super()
-            .log_prob(actions.squeeze(-1).float())
-            .view(actions.size(0), -1)
-            .sum(-1)
-            .unsqueeze(-1)
-        )
-
-    def mode(self):
-        return self.mean
-
-
-class ContinuousNet(nn.Module):
-    def __init__(self, num_inputs, num_outputs):
-        super().__init__()
-
-        self.linear = nn.Linear(num_inputs, num_outputs)
-        self.stats = dict()
-
-        nn.init.orthogonal_(self.linear.weight, gain=0.01)
-        nn.init.constant_(self.linear.bias, 0)
-
-    def forward(self, x):
-        x = self.linear(x)
-        mean = f.hardtanh(x[:, :2], min_val=-3, max_val=3)
-        # scale_tril = torch.reshape(torch.stack([torch.abs(x[:, 2]), torch.zeros(x.shape[0]).to(device=x.device),
-        #                            x[:, 3], torch.abs(x[:, 4])], dim=1), (-1, 2, 2))
-        #
-        # return ContinuousDistribution(mean, scale_tril=scale_tril)
-
-        # sigma = 1
-        # cov_matrix = (torch.eye(2) * torch.tensor(sigma)).reshape((1, 2, 2))
-        # cov_matrix = cov_matrix.repeat(x.shape[0], 1, 1).to(device=x.device)
-        #
-        # return ContinuousDistribution(mean, covariance_matrix=cov_matrix)
-
-        # TODO: also check the hardtanh variant
-        # cov_matrix = torch.reshape(torch.stack([f.hardtanh(x[:, 2], min_val=1e-6), torch.zeros(x.shape[0]).to(device=x.device),
-        #                            torch.zeros(x.shape[0]).to(device=x.device), f.hardtanh(x[:, 3], min_val=1e-6)], dim=1), (-1, 2, 2))
-        offset = torch.ones(x.shape[0]).to(device=x.device) * torch.tensor(0.06).to(device=x.device)
-        cov_matrix = torch.reshape(torch.stack([f.sigmoid(x[:, 2]) + offset, torch.zeros(x.shape[0]).to(device=x.device),
-                                   torch.zeros(x.shape[0]).to(device=x.device), f.sigmoid(x[:, 3]) + offset], dim=1), (-1, 2, 2))
-        return ContinuousDistribution(mean, covariance_matrix=cov_matrix)
 
 
 def linear_decay(epoch: int, total_num_updates: int) -> float:
@@ -255,34 +219,26 @@ def generate_video(
         )
 
 
-def plot_top_down_map(info):
+def plot_top_down_map(info, dataset='replica'):
     top_down_map = info["top_down_map"]["map"]
     top_down_map = maps.colorize_topdown_map(
         top_down_map, info["top_down_map"]["fog_of_war_mask"]
     )
     map_agent_pos = info["top_down_map"]["agent_map_coord"]
+    if dataset == 'replica':
+        agent_radius_px = top_down_map.shape[0] // 16
+    else:
+        agent_radius_px = top_down_map.shape[0] // 50
     top_down_map = maps.draw_agent(
         image=top_down_map,
         agent_center_coord=map_agent_pos,
         agent_rotation=info["top_down_map"]["agent_angle"],
-        agent_radius_px=top_down_map.shape[0] // 16,
+        agent_radius_px=agent_radius_px
     )
 
     if top_down_map.shape[0] > top_down_map.shape[1]:
         top_down_map = np.rot90(top_down_map, 1)
     return top_down_map
-
-
-def add_pointgoal_noise(observations, config):
-    if not config.TASK_CONFIG.DATASET.SPLIT.startswith('test'):
-        sigma = random.choice([0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5])
-    else:
-        sigma = config.SIGMA
-    if sigma != 0:
-        for observation in observations:
-            x, y = observation['pointgoal_with_gps_compass']
-            observation['pointgoal_with_gps_compass'] = np.array((random.gauss(x, sigma), random.gauss(y, sigma)))
-
 
 def images_to_video_with_audio(
     images: List[np.ndarray],
@@ -313,16 +269,17 @@ def images_to_video_with_audio(
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     video_name = video_name.replace(" ", "_").replace("\n", "_") + ".mp4"
+    
 
     assert len(images) == len(audios) * fps
     audio_clips = []
     temp_file_name = '/tmp/{}.wav'.format(random.randint(0, 10000))
     # use amplitude scaling factor to reduce the volume of sounds
-    amplitude_scaling_factor = 60
+    amplitude_scaling_factor = 100
     for i, audio in enumerate(audios):
         # def f(t):
         #     return audio[0, t], audio[1: t]
-        #
+        # 
         # audio_clip = mpy.AudioClip(f, duration=1, fps=audio.shape[1])
         wavfile.write(temp_file_name, sr, audio.T / amplitude_scaling_factor)
         audio_clip = mpy.AudioFileClip(temp_file_name)
@@ -341,4 +298,3 @@ def resize_observation(observations, model_resolution):
         observation['rgb'] = cv2.resize(observation['rgb'], (model_resolution, model_resolution))
         observation['depth'] = np.expand_dims(cv2.resize(observation['depth'], (model_resolution, model_resolution)),
                                               axis=-1)
-

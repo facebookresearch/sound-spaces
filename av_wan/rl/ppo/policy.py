@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
 # Copyright (c) Facebook, Inc. and its affiliates.
-# This source code is licensed under the MIT license found in the
+# All rights reserved.
+
+# This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
+
 import abc
 import logging
 
@@ -11,7 +14,7 @@ import torch.nn as nn
 from torchsummary import summary
 import numpy as np
 
-from av_wan.common.utils import CategoricalNet, ContinuousNet
+from ss_baselines.common.utils import CategoricalNetWithMask
 from av_wan.rl.models.rnn_state_encoder import RNNStateEncoder
 from av_wan.rl.models.visual_cnn import VisualCNN
 from av_wan.rl.models.map_cnn import MapCNN
@@ -26,7 +29,7 @@ class Policy(nn.Module):
         self.net = net
         self.dim_actions = dim_actions
 
-        self.action_distribution = CategoricalNet(
+        self.action_distribution = CategoricalNetWithMask(
             self.net.output_size, self.dim_actions, masking
         )
         self.critic = CriticHead(self.net.output_size)

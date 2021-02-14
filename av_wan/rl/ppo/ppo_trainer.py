@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 # Copyright (c) Facebook, Inc. and its affiliates.
-# This source code is licensed under the MIT license found in the
+# All rights reserved.
+
+# This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
 import os
@@ -20,13 +22,13 @@ from numpy.linalg import norm
 
 from habitat import Config, logger
 from habitat.utils.visualizations.utils import observations_to_image
-from av_wan.common.base_trainer import BaseRLTrainer
-from av_wan.common.baseline_registry import baseline_registry
-from av_wan.common.env_utils import construct_envs
-from av_wan.common.environments import get_env_class
-from av_wan.common.rollout_storage import RolloutStorage
-from av_wan.common.tensorboard_utils import TensorboardWriter
-from av_wan.common.utils import (
+from ss_baselines.common.base_trainer import BaseRLTrainer
+from ss_baselines.common.baseline_registry import baseline_registry
+from ss_baselines.common.env_utils import construct_envs
+from ss_baselines.common.environments import get_env_class
+from ss_baselines.common.rollout_storage import RolloutStorage
+from ss_baselines.common.tensorboard_utils import TensorboardWriter
+from ss_baselines.common.utils import (
     batch_obs,
     generate_video,
     linear_decay,
@@ -239,7 +241,7 @@ class PPOTrainer(BaseRLTrainer):
         torch.manual_seed(self.config.SEED)
 
         self.envs = construct_envs(
-            self.config, get_env_class(self.config.ENV_NAME), workers_ignore_signals=True
+            self.config, get_env_class(self.config.ENV_NAME)
         )
 
         ppo_cfg = self.config.RL.PPO
@@ -500,7 +502,7 @@ class PPOTrainer(BaseRLTrainer):
 
         logger.info(f"env config: {config}")
         self.envs = construct_envs(
-            config, get_env_class(config.ENV_NAME)
+            config, get_env_class(config.ENV_NAME), auto_reset_done=False
         )
         if self.config.DISPLAY_RESOLUTION != model_resolution:
             observation_space = self.envs.observation_spaces[0]

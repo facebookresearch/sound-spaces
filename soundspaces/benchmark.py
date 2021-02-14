@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
 # Copyright (c) Facebook, Inc. and its affiliates.
-# This source code is licensed under the MIT license found in the
+# All rights reserved.
+
+# This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
+
 r"""Implements evaluation of ``habitat.Agent`` inside ``habitat.Env``.
 ``habitat.Benchmark`` creates a ``habitat.Env`` which is specified through
 the ``config_env`` parameter in constructor. The evaluation is task agnostic

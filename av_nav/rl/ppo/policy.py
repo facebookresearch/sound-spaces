@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 from torchsummary import summary
 
-from av_nav.common.utils import CategoricalNet
+from ss_baselines.common.utils import CategoricalNet
 from av_nav.rl.models.rnn_state_encoder import RNNStateEncoder
 from av_nav.rl.models.visual_cnn import VisualCNN
 from av_nav.rl.models.audio_cnn import AudioCNN

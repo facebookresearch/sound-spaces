@@ -22,13 +22,13 @@ from numpy.linalg import norm
 
 from habitat import Config, logger
 from habitat.utils.visualizations.utils import observations_to_image
-from av_nav.common.base_trainer import BaseRLTrainer
-from av_nav.common.baseline_registry import baseline_registry
-from av_nav.common.env_utils import construct_envs
-from av_nav.common.environments import get_env_class
-from av_nav.common.rollout_storage import RolloutStorage
-from av_nav.common.tensorboard_utils import TensorboardWriter
-from av_nav.common.utils import (
+from ss_baselines.common.base_trainer import BaseRLTrainer
+from ss_baselines.common.baseline_registry import baseline_registry
+from ss_baselines.common.env_utils import construct_envs
+from ss_baselines.common.environments import get_env_class
+from ss_baselines.common.rollout_storage import RolloutStorage
+from ss_baselines.common.tensorboard_utils import TensorboardWriter
+from ss_baselines.common.utils import (
     batch_obs,
     generate_video,
     linear_decay,

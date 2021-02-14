@@ -14,8 +14,8 @@ import glob
 import torch
 
 from habitat import Config, logger
-from av_nav.common.tensorboard_utils import TensorboardWriter
-from av_nav.common.utils import poll_checkpoint_folder
+from ss_baselines.common.tensorboard_utils import TensorboardWriter
+from ss_baselines.common.utils import poll_checkpoint_folder
 
 
 class BaseTrainer:

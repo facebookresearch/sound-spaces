@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
 # Copyright (c) Facebook, Inc. and its affiliates.
-# This source code is licensed under the MIT license found in the
+# All rights reserved.
+
+# This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
+
 r"""
 This file hosts task-specific or trainer-specific environments for trainers.
 All environments here should be a (direct or indirect ) subclass of Env class
@@ -15,7 +18,7 @@ import logging
 
 import habitat
 from habitat import Config, Dataset
-from av_wan.common.baseline_registry import baseline_registry
+from ss_baselines.common.baseline_registry import baseline_registry
 
 
 def get_env_class(env_name: str) -> Type[habitat.RLEnv]:
@@ -84,9 +87,9 @@ class NavRLEnv(habitat.RLEnv):
 
     def _distance_target(self):
         current_position = self._env.sim.get_agent_state().position.tolist()
-        target_position = self._env.current_episode.goals[0].position
+        target_positions = [goal.position for goal in self._env.current_episode.goals]
         distance = self._env.sim.geodesic_distance(
-            current_position, target_position
+            current_position, target_positions
         )
         return distance
 

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 # Copyright (c) Facebook, Inc. and its affiliates.
-# This source code is licensed under the MIT license found in the
+# All rights reserved.
+
+# This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
 r"""BaselineRegistry is extended from habitat.Registry to provide
@@ -10,7 +12,7 @@ in habitat core intact.
 
 Import the baseline registry object using
 
-``from av_wan.common.baseline_registry import baseline_registry``
+``from av_nav.common.baseline_registry import baseline_registry``
 
 Various decorators for registry different kind of classes with unique keys
 
@@ -33,7 +35,7 @@ class BaselineRegistry(Registry):
                 If None will use the name of the class.
 
         """
-        from av_wan.common.base_trainer import BaseTrainer
+        from ss_baselines.common.base_trainer import BaseTrainer
 
         return cls._register_impl(
             "trainer", to_register, name, assert_type=BaseTrainer

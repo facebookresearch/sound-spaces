@@ -6,7 +6,7 @@ import habitat
 import torch
 from habitat import Config, Dataset
 from habitat.utils.visualizations.utils import observations_to_image
-from av_wan.common.baseline_registry import baseline_registry
+from ss_baselines.common.baseline_registry import baseline_registry
 from av_wan.rl.models.planner import Planner
 
 

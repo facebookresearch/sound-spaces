@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 # Copyright (c) Facebook, Inc. and its affiliates.
-# This source code is licensed under the MIT license found in the
+# All rights reserved.
+
+# This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
 import argparse
@@ -14,7 +16,8 @@ warnings.filterwarnings('ignore', category=UserWarning)
 import tensorflow as tf
 import torch
 
-from av_wan.common.baseline_registry import baseline_registry
+import soundspaces
+from ss_baselines.common.baseline_registry import baseline_registry
 from av_wan.config.default import get_config
 
 

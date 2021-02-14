@@ -15,8 +15,8 @@ from habitat.sims.habitat_simulator.actions import HabitatSimActions
 from habitat.utils.visualizations import maps
 from habitat.datasets import make_dataset
 from habitat.utils.visualizations.utils import observations_to_image
-from av_nav.common.environments import NavRLEnv
-from av_nav.common.utils import images_to_video_with_audio
+from ss_baselines.common.environments import NavRLEnv
+from ss_baselines.common.utils import images_to_video_with_audio
 from av_nav.config import get_config
 
 

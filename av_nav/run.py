@@ -12,10 +12,10 @@ import logging
 import warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
 warnings.filterwarnings('ignore', category=UserWarning)
-import tensorflow as tf
 import torch
 
-from av_nav.common.baseline_registry import baseline_registry
+import soundspaces
+from ss_baselines.common.baseline_registry import baseline_registry
 from av_nav.config.default import get_config
 
 

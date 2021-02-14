@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from av_wan.common.utils import Flatten
+from ss_baselines.common.utils import Flatten
 
 
 class AudioCNN(nn.Module):
