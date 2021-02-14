@@ -17,7 +17,7 @@ from habitat.datasets import make_dataset
 from habitat.utils.visualizations.utils import observations_to_image
 from ss_baselines.common.environments import NavRLEnv
 from ss_baselines.common.utils import images_to_video_with_audio
-from av_nav.config import get_config
+from ss_baselines.av_nav.config import get_config
 
 
 def draw_top_down_map(info):

@@ -6,6 +6,6 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-from av_wan.rl.ppo.policy import Net, PointNavBaselinePolicy, Policy
-
-__all__ = ["PPO", "Policy", "Net", "PointNavBaselinePolicy"]
+from ss_baselines.av_wan.ppo.ppo_trainer import PPOTrainer
+from ss_baselines.av_wan.avwan_sensors import *
+from ss_baselines.av_wan.mapnav_env import MapNavEnv

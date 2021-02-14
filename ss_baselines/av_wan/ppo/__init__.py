@@ -6,6 +6,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-from av_nav.rl.ppo.ppo_trainer import PPOTrainer, RolloutStorage
+from ss_baselines.av_wan.ppo.policy import Net, AudioNavBaselinePolicy, Policy
+from ss_baselines.av_nav.ppo.ppo import PPO
 
-__all__ = ["BaseTrainer", "BaseRLTrainer", "PPOTrainer", "RolloutStorage"]
+__all__ = ["PPO", "Policy", "Net", "AudioNavBaselinePolicy"]

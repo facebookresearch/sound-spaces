@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from habitat.utils.visualizations.utils import observations_to_image
 from habitat.sims.habitat_simulator.actions import HabitatSimActions
-from av_wan.rl.models.mapper import Mapper, to_array
+from ss_baselines.av_wan.models.mapper import Mapper, to_array
 
 
 class Planner:

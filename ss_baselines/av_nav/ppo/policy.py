@@ -12,9 +12,9 @@ import torch.nn as nn
 from torchsummary import summary
 
 from ss_baselines.common.utils import CategoricalNet
-from av_nav.rl.models.rnn_state_encoder import RNNStateEncoder
-from av_nav.rl.models.visual_cnn import VisualCNN
-from av_nav.rl.models.audio_cnn import AudioCNN
+from ss_baselines.av_nav.models.rnn_state_encoder import RNNStateEncoder
+from ss_baselines.av_nav.models.visual_cnn import VisualCNN
+from ss_baselines.av_nav.models.audio_cnn import AudioCNN
 
 DUAL_GOAL_DELIMITER = ','
 
@@ -93,7 +93,7 @@ class CriticHead(nn.Module):
         return self.fc(x)
 
 
-class PointNavBaselinePolicy(Policy):
+class AudioNavBaselinePolicy(Policy):
     def __init__(
         self,
         observation_space,
@@ -103,7 +103,7 @@ class PointNavBaselinePolicy(Policy):
         extra_rgb=False
     ):
         super().__init__(
-            PointNavBaselineNet(
+            AudioNavBaselineNet(
                 observation_space=observation_space,
                 hidden_size=hidden_size,
                 goal_sensor_uuid=goal_sensor_uuid,
@@ -134,7 +134,7 @@ class Net(nn.Module, metaclass=abc.ABCMeta):
         pass
 
 
-class PointNavBaselineNet(Net):
+class AudioNavBaselineNet(Net):
     r"""Network which passes the input image through CNN and concatenates
     goal vector with CNN's output and passes that through RNN.
     """

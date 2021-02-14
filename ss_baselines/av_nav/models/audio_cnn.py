@@ -69,13 +69,6 @@ class AudioCNN(nn.Module):
                 kernel_size=self._cnn_layers_kernel_size[2],
                 stride=self._cnn_layers_stride[2],
             ),
-            # nn.ReLU(True),
-            # nn.Conv2d(
-            #     in_channels=64,
-            #     out_channels=32,
-            #     kernel_size=self._cnn_layers_kernel_size[3],
-            #     stride=self._cnn_layers_stride[3],
-            # ),
             #  nn.ReLU(True),
             Flatten(),
             nn.Linear(64 * cnn_dims[0] * cnn_dims[1], output_size),

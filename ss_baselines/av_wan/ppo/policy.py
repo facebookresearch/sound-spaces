@@ -15,10 +15,10 @@ from torchsummary import summary
 import numpy as np
 
 from ss_baselines.common.utils import CategoricalNetWithMask
-from av_wan.rl.models.rnn_state_encoder import RNNStateEncoder
-from av_wan.rl.models.visual_cnn import VisualCNN
-from av_wan.rl.models.map_cnn import MapCNN
-from av_wan.rl.models.audio_cnn import AudioCNN
+from ss_baselines.av_nav.models.rnn_state_encoder import RNNStateEncoder
+from ss_baselines.av_wan.models.visual_cnn import VisualCNN
+from ss_baselines.av_wan.models.map_cnn import MapCNN
+from ss_baselines.av_wan.models.audio_cnn import AudioCNN
 
 DUAL_GOAL_DELIMITER = ','
 
@@ -92,7 +92,7 @@ class CriticHead(nn.Module):
         return self.fc(x)
 
 
-class PointNavBaselinePolicy(Policy):
+class AudioNavBaselinePolicy(Policy):
     def __init__(
             self,
             observation_space,
@@ -104,7 +104,7 @@ class PointNavBaselinePolicy(Policy):
             encode_depth=False
     ):
         super().__init__(
-            PointNavBaselineNet(
+            AudioNavBaselineNet(
                 observation_space=observation_space,
                 hidden_size=hidden_size,
                 goal_sensor_uuid=goal_sensor_uuid,
@@ -138,7 +138,7 @@ class Net(nn.Module, metaclass=abc.ABCMeta):
         pass
 
 
-class PointNavBaselineNet(Net):
+class AudioNavBaselineNet(Net):
     r"""Network which passes the input image through CNN and concatenates
     goal vector with CNN's output and passes that through RNN.
     """
@@ -150,7 +150,6 @@ class PointNavBaselineNet(Net):
         self._spectrogram = False
         self._gm = 'gm' in observation_space.spaces
         self._am = 'am' in observation_space.spaces
-        self._label = 'category' in observation_space.spaces
 
         self._spectrogram = 'spectrogram' == self.goal_sensor_uuid
         self.visual_encoder = VisualCNN(observation_space, hidden_size, encode_rgb, encode_depth)
@@ -164,8 +163,7 @@ class PointNavBaselineNet(Net):
         rnn_input_size = (0 if self.is_blind else self._hidden_size) + \
                          (self._hidden_size if self._spectrogram else 0) + \
                          (self._hidden_size if self._gm else 0) + \
-                         (self._hidden_size if self._am else 0) + \
-                         (observation_space.spaces['category'].shape[0] if self._label else 0)
+                         (self._hidden_size if self._am else 0)
         self.state_encoder = RNNStateEncoder(rnn_input_size, self._hidden_size)
 
         if 'rgb' in observation_space.spaces and encode_rgb:
@@ -209,8 +207,6 @@ class PointNavBaselineNet(Net):
             x.append(self.am_encoder(observations))
         if not self.is_blind:
             x.append(self.visual_encoder(observations))
-        if self._label:
-            x.append(observations['category'].to(device=x[0].device))
 
         x1 = torch.cat(x, dim=1)
         x2, rnn_hidden_states1 = self.state_encoder(x1, rnn_hidden_states, masks)
