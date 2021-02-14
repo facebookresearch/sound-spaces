@@ -23,7 +23,7 @@ from soundspaces.utils import load_metadata
 from ss_baselines.av_nav.config import get_config
 
 
-class SoundSpaces(HabitatSim):
+class SoundSpacesSim(HabitatSim):
     def __init__(self, config):
         super().__init__(config)
         self.points = None
@@ -134,7 +134,7 @@ def main(dataset):
 
                 episode_sim_config = merge_sim_episode_config(config.TASK_CONFIG.SIMULATOR, episode)
                 if simulator is None:
-                    simulator = SoundSpaces(episode_sim_config)
+                    simulator = SoundSpacesSim(episode_sim_config)
                 simulator.reconfigure(episode_sim_config)
 
                 obs, rotation_index = simulator.step(None)

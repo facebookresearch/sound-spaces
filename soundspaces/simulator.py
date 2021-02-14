@@ -3,8 +3,8 @@
 
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
-
-from typing import Any, List
+from abc import ABC
+from typing import Any, List, Optional
 from collections import defaultdict, namedtuple
 import logging
 import time
@@ -17,14 +17,44 @@ from scipy.io import wavfile
 from scipy.signal import fftconvolve
 import numpy as np
 import networkx as nx
+from gym import spaces
 
 from habitat.core.registry import registry
 import habitat_sim
 from habitat_sim.utils.common import quat_from_angle_axis, quat_from_coeffs, quat_to_angle_axis
 from habitat.sims.habitat_simulator.habitat_simulator import HabitatSim
 from habitat.sims.habitat_simulator.actions import HabitatSimActions
-from habitat.core.simulator import Config, AgentState, ShortestPathPoint
-from soundspaces.utils import load_metadata, _to_tensor
+from habitat.core.simulator import (
+    AgentState,
+    Config,
+    Observations,
+    SensorSuite,
+    ShortestPathPoint,
+    Simulator,
+)
+from soundspaces.utils import load_metadata
+
+
+def overwrite_config(config_from: Config, config_to: Any) -> None:
+    r"""Takes Habitat-API config and Habitat-Sim config structures. Overwrites
+    Habitat-Sim config with Habitat-API values, where a field name is present
+    in lowercase. Mostly used to avoid :ref:`sim_cfg.field = hapi_cfg.FIELD`
+    code.
+
+    Args:
+        config_from: Habitat-API config node.
+        config_to: Habitat-Sim config structure.
+    """
+
+    def if_config_to_lower(config):
+        if isinstance(config, Config):
+            return {key.lower(): val for key, val in config.items()}
+        else:
+            return config
+
+    for attr, value in config_from.items():
+        if hasattr(config_to, attr.lower()):
+            setattr(config_to, attr.lower(), if_config_to_lower(value))
 
 
 class DummySimulator:
@@ -62,7 +92,7 @@ class DummySimulator:
 
 
 @registry.register_simulator()
-class SoundSpaces(HabitatSim):
+class SoundSpacesSim(Simulator, ABC):
     r"""Changes made to simulator wrapper over habitat-sim
 
     This simulator first loads the graph of current environment and moves the agent among nodes.
@@ -76,7 +106,27 @@ class SoundSpaces(HabitatSim):
         pass
 
     def __init__(self, config: Config) -> None:
-        super().__init__(config)
+        self.config = config
+        agent_config = self.get_agent_config()
+        sim_sensors = []
+        for sensor_name in agent_config.SENSORS:
+            sensor_cfg = getattr(self.config, sensor_name)
+            sensor_type = registry.get_sensor(sensor_cfg.TYPE)
+
+            assert sensor_type is not None, "invalid sensor type {}".format(
+                sensor_cfg.TYPE
+            )
+            sim_sensors.append(sensor_type(sensor_cfg))
+
+        self._sensor_suite = SensorSuite(sim_sensors)
+        self.sim_config = self.create_sim_config(self._sensor_suite)
+        self._current_scene = self.sim_config.sim_cfg.scene.id
+        self._sim = habitat_sim.Simulator(self.sim_config)
+        self._action_space = spaces.Discrete(
+            len(self.sim_config.agents[0].action_space)
+        )
+        self._prev_sim_obs = None
+
         self._source_position_index = None
         self._receiver_position_index = None
         self._rotation_angle = None
@@ -107,6 +157,56 @@ class SoundSpaces(HabitatSim):
             with open(self.current_scene_observation_file, 'rb') as fo:
                 self._frame_cache = pickle.load(fo)
 
+    def create_sim_config(
+        self, _sensor_suite: SensorSuite
+    ) -> habitat_sim.Configuration:
+        sim_config = habitat_sim.SimulatorConfiguration()
+        overwrite_config(
+            config_from=self.config.HABITAT_SIM_V0, config_to=sim_config
+        )
+        sim_config.scene.id = self.config.SCENE
+        agent_config = habitat_sim.AgentConfiguration()
+        overwrite_config(
+            config_from=self.get_agent_config(), config_to=agent_config
+        )
+
+        sensor_specifications = []
+        for sensor in _sensor_suite.sensors.values():
+            sim_sensor_cfg = habitat_sim.SensorSpec()
+            overwrite_config(
+                config_from=sensor.config, config_to=sim_sensor_cfg
+            )
+            sim_sensor_cfg.uuid = sensor.uuid
+            sim_sensor_cfg.resolution = list(
+                sensor.observation_space.shape[:2]
+            )
+            sim_sensor_cfg.parameters["hfov"] = str(sensor.config.HFOV)
+
+            # accessing child attributes through parent interface
+            sim_sensor_cfg.sensor_type = sensor.sim_sensor_type  # type: ignore
+            sim_sensor_cfg.gpu2gpu_transfer = (
+                self.config.HABITAT_SIM_V0.GPU_GPU
+            )
+            sensor_specifications.append(sim_sensor_cfg)
+
+        agent_config.sensor_specifications = sensor_specifications
+        agent_config.action_space = registry.get_action_space_configuration(
+            self.config.ACTION_SPACE_CONFIG
+        )(self.config).get()
+
+        return habitat_sim.Configuration(sim_config, [agent_config])
+
+    @property
+    def sensor_suite(self) -> SensorSuite:
+        return self._sensor_suite
+
+    def get_agent_config(self, agent_id: Optional[int] = None) -> Any:
+        if agent_id is None:
+            agent_id = self.config.DEFAULT_AGENT_ID
+        agent_name = self.config.AGENTS[agent_id]
+        agent_config = getattr(self.config, agent_name)
+        return agent_config
+
     def get_agent_state(self, agent_id: int = 0) -> habitat_sim.AgentState:
         if not self.config.USE_RENDERED_OBSERVATIONS:
             agent_state = super().get_agent_state(agent_id)
@@ -126,6 +226,36 @@ class SoundSpaces(HabitatSim):
             super().set_agent_state(position, rotation, agent_id=agent_id, reset_sensors=reset_sensors)
         else:
             pass
+
+    def get_observations_at(
+        self,
+        position: Optional[List[float]] = None,
+        rotation: Optional[List[float]] = None,
+        keep_agent_at_new_pose: bool = False,
+    ) -> Optional[Observations]:
+        current_state = self.get_agent_state()
+        if position is None or rotation is None:
+            success = True
+        else:
+            success = self.set_agent_state(
+                position, rotation, reset_sensors=False
+            )
+
+        if success:
+            sim_obs = self._sim.get_sensor_observations()
+
+            self._prev_sim_obs = sim_obs
+
+            observations = self._sensor_suite.get_observations(sim_obs)
+            if not keep_agent_at_new_pose:
+                self.set_agent_state(
+                    current_state.position,
+                    current_state.rotation,
+                    reset_sensors=False,
+                )
+            return observations
+        else:
+            return None
 
     @property
     def binaural_rir_dir(self):
@@ -238,7 +368,7 @@ class SoundSpaces(HabitatSim):
         self._is_episode_active = True
         self._prev_sim_obs = sim_obs
         self._previous_step_collided = False
-        # Encapsule data under Observations class
+        # Encapsulate data under Observations class
         observations = self._sensor_suite.get_observations(sim_obs)
 
         return observations
@@ -442,3 +572,6 @@ class SoundSpaces(HabitatSim):
 
     def cache_egomap_observation(self, egomap):
         self._egomap_cache[self._current_scene][(self._receiver_position_index, self._rotation_angle)] = egomap
+
+    def seed(self, seed):
+        self._sim.seed(seed)

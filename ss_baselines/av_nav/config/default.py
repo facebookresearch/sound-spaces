@@ -200,6 +200,7 @@ def get_config(
 
     config.TASK_CONFIG.defrost()
     config.TASK_CONFIG.SIMULATOR.USE_SYNC_VECENV = config.USE_SYNC_VECENV
+    config.TASK_CONFIG.SIMULATOR.FORWARD_STEP_SIZE = config.TASK_CONFIG.SIMULATOR.GRID_SIZE
     config.TASK_CONFIG.freeze()
     config.freeze()
     return config

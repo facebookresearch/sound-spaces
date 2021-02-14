@@ -11,7 +11,7 @@ SIMULATOR:
     HEIGHT: 128
 #    NOISE_MODEL: RedwoodDepthNoiseModel
 
-  TYPE: "SoundSpaces"
+  TYPE: "SoundSpacesSim"
   ACTION_SPACE_CONFIG: "v0"
   SCENE_DATASET: "mp3d"
   GRID_SIZE: 1.0
