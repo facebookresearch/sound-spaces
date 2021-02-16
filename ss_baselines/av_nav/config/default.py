@@ -124,6 +124,7 @@ _TC.SIMULATOR.AUDIO.GRAPH_FILE = 'graph.pkl'
 # -----------------------------------------------------------------------------
 _TC.TASK.DISTANCE_TO_GOAL = CN()
 _TC.TASK.DISTANCE_TO_GOAL.TYPE = "DistanceToGoal"
+_TC.TASK.DISTANCE_TO_GOAL.DISTANCE_TO = "POINT"
 _TC.TASK.NORMALIZED_DISTANCE_TO_GOAL = CN()
 _TC.TASK.NORMALIZED_DISTANCE_TO_GOAL.TYPE = "NormalizedDistanceToGoal"
 # -----------------------------------------------------------------------------
@@ -132,6 +133,7 @@ _TC.TASK.NORMALIZED_DISTANCE_TO_GOAL.TYPE = "NormalizedDistanceToGoal"
 _TC.DATASET.VERSION = 'v1'
 # -----------------------------------------------------------------------------
 # NumberOfAction Measure
+# -----------------------------------------------------------------------------
 # -----------------------------------------------------------------------------
 _TC.TASK.NUM_ACTION = CN()
 _TC.TASK.NUM_ACTION.TYPE = "NA"

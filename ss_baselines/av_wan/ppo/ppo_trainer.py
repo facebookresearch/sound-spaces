@@ -263,8 +263,7 @@ class PPOTrainer(BaseRLTrainer):
             self.envs.num_envs,
             self.envs.observation_spaces[0],
             self.envs.action_spaces[0],
-            ppo_cfg.hidden_size,
-            self.config.TASK_CONFIG.TASK.ACTION_MAP.MAP_SIZE
+            ppo_cfg.hidden_size
         )
         rollouts.to(self.device)
 
