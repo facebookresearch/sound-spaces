@@ -9,11 +9,10 @@ from setuptools import setup
 
 setup(
     name='sound-spaces',
-    version='0.0.1',
+    version='0.2.0',
     packages=[
         'soundspaces',
-        'av_nav',
-        'av_wan',
+        'ss_baselines'
     ],
     install_requires=[
         'habitat',
@@ -34,8 +33,8 @@ setup(
         'pydub',
         'getch',
         'matplotlib',
-        'librosa',
         'numba==0.48',
+        'librosa==0.6.3',
         'torchsummary',
         'gitpython',
         'networkx',

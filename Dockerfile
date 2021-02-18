@@ -47,7 +47,7 @@ RUN /bin/bash -c ". activate soundspaces; cd habitat-sim; pip install -r require
 
 # Install challenge specific habitat-lab
 RUN git clone --branch stable https://github.com/facebookresearch/habitat-lab.git
-RUN /bin/bash -c ". activate soundspaces; cd habitat-lab; git checkout v0.1.5; pip install -e ."
+RUN /bin/bash -c ". activate soundspaces; cd habitat-lab; git checkout v0.1.6; pip install -e ."
 
 # Install challenge specific habitat-lab
 RUN git clone --branch cca-dev https://github.com/facebookresearch/sound-spaces.git
