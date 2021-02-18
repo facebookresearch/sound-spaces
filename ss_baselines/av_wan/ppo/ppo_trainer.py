@@ -240,7 +240,7 @@ class PPOTrainer(BaseRLTrainer):
         torch.manual_seed(self.config.SEED)
 
         self.envs = construct_envs(
-            self.config, get_env_class(self.config.ENV_NAME)
+            self.config, get_env_class(self.config.ENV_NAME), auto_reset_done=False
         )
 
         ppo_cfg = self.config.RL.PPO
