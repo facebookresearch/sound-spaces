@@ -5,3 +5,4 @@ data_
 __pycache__
 logs/
 my_script
+.idea
