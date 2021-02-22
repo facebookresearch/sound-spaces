@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package evaluation;
+ 
+service Environment{
+ rpc num_episodes(Package) returns (Package) {}
+ rpc reset(Package) returns (Package) {}
+ rpc episode_over(Package) returns (Package) {}
+ rpc get_metrics(Package) returns (Package) {}
+ rpc act_on_environment(Package) returns (Package) {}
+ rpc evalai_update_submission(Package) returns (Package) {}
+}
+ 
+message Package{
+  bytes SerializedEntity = 1;
+}

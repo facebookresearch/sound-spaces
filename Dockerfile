@@ -54,6 +54,8 @@ RUN pwd
 RUN git clone --branch master https://github.com/facebookresearch/sound-spaces.git
 RUN /bin/bash -c ". activate soundspaces; cd sound-spaces;pip install -e ."
 
+ADD evalai-remote-evaluation evalai-remote-evaluation
+
 # Silence habitat-sim logs
 ENV GLOG_minloglevel=2
 ENV MAGNUM_LOG="quiet"
