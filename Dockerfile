@@ -51,7 +51,7 @@ RUN /bin/bash -c ". activate soundspaces; cd habitat-lab; git checkout v0.1.6; p
 
 # Install challenge specific habitat-lab
 RUN pwd
-RUN git clone --branch master https://github.com/facebookresearch/sound-spaces.git
+RUN git clone --branch soundspaces-challenge https://github.com/facebookresearch/sound-spaces.git
 RUN /bin/bash -c ". activate soundspaces; cd sound-spaces;pip install -e ."
 
 ADD evalai-remote-evaluation evalai-remote-evaluation

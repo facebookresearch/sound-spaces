@@ -12,7 +12,6 @@ the ``config_env`` parameter in constructor. The evaluation is task agnostic
 and is implemented through metrics defined for ``habitat.EmbodiedTask``.
 """
 
-import os
 from collections import defaultdict
 from typing import Dict, Optional
 
@@ -121,6 +120,7 @@ class Benchmark:
         avg_metrics = {k: v / count_episodes for k, v in agg_metrics.items()}
 
         stub.evalai_update_submission(evaluation_pb2.Package())
+        print('Evalai update submission')
 
         return avg_metrics
 
