@@ -47,6 +47,7 @@ class Benchmark:
         # These modules are not part of the habitat-lab repository.
         import pickle
         import time
+        import os
 
         import evalai_environment_habitat  # noqa: F401
         import evaluation_pb2
@@ -67,8 +68,15 @@ class Benchmark:
             )
             return res_env["episode_over"]
 
-        env_address_port = os.environ.get("EVALENV_ADDPORT", "localhost:8085")
-        channel = grpc.insecure_channel(env_address_port)
+        LOCAL_EVALUATION = os.environ.get("LOCAL_EVALUATION")
+
+        if LOCAL_EVALUATION:
+            channel = grpc.insecure_channel("environment:8085")
+        else:
+            channel = grpc.insecure_channel("localhost:8085")
+
+        # env_address_port = os.environ.get("EVALENV_ADDPORT", "localhost:8085")
+        # channel = grpc.insecure_channel(env_address_port)
         stub = evaluation_pb2_grpc.EnvironmentStub(channel)
 
         base_num_episodes = unpack_for_grpc(
