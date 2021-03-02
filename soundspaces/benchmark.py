@@ -12,6 +12,7 @@ the ``config_env`` parameter in constructor. The evaluation is task agnostic
 and is implemented through metrics defined for ``habitat.EmbodiedTask``.
 """
 
+import sys
 from collections import defaultdict
 from typing import Dict, Optional
 
@@ -53,8 +54,6 @@ class Benchmark:
         import evaluation_pb2_grpc
         import grpc
 
-        time.sleep(60)
-
         def pack_for_grpc(entity):
             return pickle.dumps(entity)
 
@@ -73,6 +72,8 @@ class Benchmark:
             channel = grpc.insecure_channel("environment:8085")
         else:
             channel = grpc.insecure_channel("localhost:8085")
+        print("Trying connect to the environment container...")
+        sys.stdout.flush()
 
         # env_address_port = os.environ.get("EVALENV_ADDPORT", "localhost:8085")
         # channel = grpc.insecure_channel(env_address_port)

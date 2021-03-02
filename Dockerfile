@@ -43,15 +43,15 @@ RUN conda create -n soundspaces python=3.8 cmake=3.14.0
 
 # Setup habitat-sim
 RUN git clone --branch stable https://github.com/facebookresearch/habitat-sim.git
-RUN /bin/bash -c ". activate soundspaces; cd habitat-sim; pip install -r requirements.txt; python setup.py install --headless"
+RUN /bin/bash -c ". activate soundspaces; cd habitat-sim; git checkout v0.1.6; pip install -r requirements.txt; python setup.py install --headless"
 
 # Install challenge specific habitat-lab
 RUN git clone --branch stable https://github.com/facebookresearch/habitat-lab.git
 RUN /bin/bash -c ". activate soundspaces; cd habitat-lab; git checkout v0.1.6; pip install -e ."
 
-# Install challenge specific habitat-lab
-RUN pwd
-RUN git clone --branch soundspaces-challenge https://github.com/facebookresearch/sound-spaces.git
+# Install challenge specific soundspaces
+#RUN git clone --branch soundspaces-challenge https://github.com/facebookresearch/sound-spaces.git
+ADD . sound-spaces
 RUN /bin/bash -c ". activate soundspaces; cd sound-spaces;pip install -e ."
 
 ADD evalai-remote-evaluation evalai-remote-evaluation
