@@ -26,7 +26,7 @@ If you use the SoundSpaces platform in your research, please cite the following 
 ```
 
 ## Installation 
-1. Install [habitat-lab v0.1.6](https://github.com/facebookresearch/habitat-lab) and [habitat-sim v0.1.7](https://github.com/facebookresearch/habitat-sim)
+1. Install [habitat-lab v0.1.6](https://github.com/facebookresearch/habitat-lab) and [habitat-sim v0.1.6](https://github.com/facebookresearch/habitat-sim)
 2. Install this repo into pip by running the following command:
 ```
 pip install -e .

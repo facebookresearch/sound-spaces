@@ -4,7 +4,8 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-from typing import List
+from typing import Any, List, Optional
+from abc import ABC
 import os
 import argparse
 import logging
@@ -14,70 +15,21 @@ from collections import defaultdict
 import numpy as np
 
 import habitat_sim
-from habitat.core.simulator import AgentState
+from habitat.core.registry import registry
+from habitat.core.simulator import AgentState, Simulator
 from habitat.sims.habitat_simulator.habitat_simulator import HabitatSim
 from habitat_sim.utils.common import quat_to_angle_axis, quat_to_coeffs, quat_from_angle_axis, quat_from_coeffs
 from habitat.tasks.nav.nav import NavigationEpisode, NavigationGoal, ShortestPathPoint
 from soundspaces.tasks.audionav_task import merge_sim_episode_config
 from soundspaces.utils import load_metadata
+from soundspaces.simulator import SoundSpacesSim
 from ss_baselines.av_nav.config import get_config
 
 
-class SoundSpacesSim(HabitatSim):
-    def __init__(self, config):
-        super().__init__(config)
-        self.points = None
-        self.graph = None
-
-    def action_space_shortest_path(self, source: AgentState, targets: List[AgentState], agent_id: int = 0) -> \
-            List[ShortestPathPoint]:
-        pass
-
-    def reconfigure(self, config) -> None:
-        dataset = config.SCENE.split('/')[2]
-        scene_name = config.SCENE.split('/')[3]
-
-        is_same_scene = config.SCENE == self._current_scene
-        self.config = config
-        self.sim_config = self.create_sim_config(self._sensor_suite)
-        if not is_same_scene:
-            self._current_scene = config.SCENE
-            self._sim.close()
-            del self._sim
-            # HabitatSim is a wrapper class of habitat_sim, which is the backend renderer
-            self._sim = habitat_sim.Simulator(self.sim_config)
-            logging.info('Loaded scene {}'.format(scene_name))
-
-        if not is_same_scene or self.points is None or self.graph is None:
-            # can happen during initialization or reconfiguration
-            metadata_dir = os.path.join('data/metadata', dataset, scene_name)
-            self.points, self.graph = load_metadata(metadata_dir)
-
-        # after env calls reconfigure to update the config with current episode,
-        # simulation needs to update the agent position, rotation in accordance with the new config file
-        self._update_agents_state()
-
-        # set agent positions
-        self._receiver_position_index = self._position_to_index(self.config.AGENT_0.START_POSITION)
-        self._source_position_index = self._position_to_index(self.config.AGENT_0.GOAL_POSITION)
-        self._rotation = int(np.around(np.rad2deg(quat_to_angle_axis(quat_from_coeffs(
-                             self.config.AGENT_0.START_ROTATION))[0]))) % 360
-        self.set_agent_state(list(self.graph.nodes[self._receiver_position_index]['point']),
-                             self.config.AGENT_0.START_ROTATION)
-
-        logging.debug("Initial source, agent at: {}, {}, orientation: {}".
-                      format(self._source_position_index, self._receiver_position_index,
-                             self._rotation))
-
-    def _position_to_index(self, position):
-        for node in self.graph:
-            if np.allclose(self.graph.nodes()[node]['point'], position):
-                return node
-        assert True, "Position misalignment."
-
+class Sim(SoundSpacesSim):
     def step(self, action):
         sim_obs = self._sim.get_sensor_observations()
-        return sim_obs, self._rotation
+        return sim_obs, self._rotation_angle
 
 
 def main(dataset):
@@ -85,7 +37,7 @@ def main(dataset):
     parser.add_argument(
         "--config-path",
         type=str,
-        default='baselines/config/{}/train_telephone/pointgoal_rgb.yaml'.format(dataset)
+        default='ss_baselines/av_nav/config/audionav/{}/train_telephone/pointgoal_rgb.yaml'.format(dataset)
     )
     parser.add_argument(
         "opts",
@@ -98,6 +50,7 @@ def main(dataset):
     config = get_config(args.config_path, opts=args.opts)
     config.defrost()
     config.TASK_CONFIG.SIMULATOR.AGENT_0.SENSORS = ["RGB_SENSOR", "DEPTH_SENSOR"]
+    config.TASK_CONFIG.SIMULATOR.USE_RENDERED_OBSERVATIONS = False
     config.freeze()
     simulator = None
     scene_obs = defaultdict(dict)
@@ -134,7 +87,7 @@ def main(dataset):
 
                 episode_sim_config = merge_sim_episode_config(config.TASK_CONFIG.SIMULATOR, episode)
                 if simulator is None:
-                    simulator = SoundSpacesSim(episode_sim_config)
+                    simulator = Sim(episode_sim_config)
                 simulator.reconfigure(episode_sim_config)
 
                 obs, rotation_index = simulator.step(None)

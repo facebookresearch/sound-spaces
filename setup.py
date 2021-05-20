@@ -9,7 +9,7 @@ from setuptools import setup
 
 setup(
     name='sound-spaces',
-    version='0.2.0',
+    version='0.1.1',
     packages=[
         'soundspaces',
         'ss_baselines'
