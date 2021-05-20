@@ -13,12 +13,11 @@ and is implemented through metrics defined for ``habitat.EmbodiedTask``.
 """
 
 import sys
+import os
 from collections import defaultdict
 from typing import Dict, Optional
 
 from habitat.core.agent import Agent
-from habitat.core.env import Env
-from ss_baselines.av_nav.config import get_task_config
 
 
 class Benchmark:
@@ -32,6 +31,12 @@ class Benchmark:
         :param config_paths: file to be used for creating the environment
         :param eval_remote: boolean indicating whether evaluation should be run remotely or locally
         """
+        if "USE_PLANNING_ENV" in os.environ:
+            from ss_baselines.av_wan.config.default import get_task_config
+            from ss_baselines.av_wan.mapnav_env import MapNavEnv as Env
+        else:
+            from ss_baselines.av_nav.config import get_task_config
+            from habitat.core.env import Env
         config_env = get_task_config(config_paths)
         self._eval_remote = eval_remote
 
