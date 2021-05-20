@@ -34,10 +34,16 @@ class Benchmark:
         if "USE_PLANNING_ENV" in os.environ:
             from ss_baselines.av_wan.config.default import get_task_config
             from ss_baselines.av_wan.mapnav_env import MapNavEnv as Env
+            print("Using planning env")
+            config_env = get_task_config(config_paths)
         else:
             from ss_baselines.av_nav.config import get_task_config
             from habitat.core.env import Env
-        config_env = get_task_config(config_paths)
+            config_env = get_task_config(config_paths)
+            config_env.defrost()
+            config_env.TASK.SENSORS = ['SPECTROGRAM_SENSOR']
+            config_env.freeze()
+        
         self._eval_remote = eval_remote
 
         if self._eval_remote is True:
