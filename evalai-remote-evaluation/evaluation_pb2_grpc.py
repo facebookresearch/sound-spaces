@@ -43,6 +43,11 @@ class EnvironmentStub(object):
         request_serializer=evaluation__pb2.Package.SerializeToString,
         response_deserializer=evaluation__pb2.Package.FromString,
         )
+    self.use_planning_env = channel.unary_unary(
+        '/evaluation.Environment/use_planning_env',
+        request_serializer=evaluation__pb2.Package.SerializeToString,
+        response_deserializer=evaluation__pb2.Package.FromString,
+        )
 
 
 class EnvironmentServicer(object):
@@ -90,6 +95,12 @@ class EnvironmentServicer(object):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
+  def use_planning_env(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
 
 
 def add_EnvironmentServicer_to_server(servicer, server):
@@ -121,6 +132,11 @@ def add_EnvironmentServicer_to_server(servicer, server):
       ),
       'evalai_update_submission': grpc.unary_unary_rpc_method_handler(
           servicer.evalai_update_submission,
+          request_deserializer=evaluation__pb2.Package.FromString,
+          response_serializer=evaluation__pb2.Package.SerializeToString,
+      ),
+      'use_planning_env': grpc.unary_unary_rpc_method_handler(
+          servicer.use_planning_env,
           request_deserializer=evaluation__pb2.Package.FromString,
           response_serializer=evaluation__pb2.Package.SerializeToString,
       ),

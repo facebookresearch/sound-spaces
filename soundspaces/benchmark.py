@@ -81,14 +81,21 @@ class Benchmark:
 
         if LOCAL_EVALUATION:
             channel = grpc.insecure_channel("environment:8085")
+            print("environment:8085")
         else:
             channel = grpc.insecure_channel("localhost:8085")
+            print("localhost:8085")
         print("Trying connect to the environment container...")
         sys.stdout.flush()
-
+        
         # env_address_port = os.environ.get("EVALENV_ADDPORT", "localhost:8085")
         # channel = grpc.insecure_channel(env_address_port)
         stub = evaluation_pb2_grpc.EnvironmentStub(channel)
+
+        if "USE_PLANNING_ENV" in os.environ:
+            _ = unpack_for_grpc(
+            stub.use_planning_env(evaluation_pb2.Package()).SerializedEntity
+        )
 
         base_num_episodes = unpack_for_grpc(
             stub.num_episodes(evaluation_pb2.Package()).SerializedEntity
