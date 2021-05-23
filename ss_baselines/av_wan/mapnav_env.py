@@ -50,7 +50,7 @@ class MapNavEnv(Env):
         return observations
 
     def step(self, action):
-        intermediate_goal = action
+        intermediate_goal = action['action']
         self._previous_action = intermediate_goal
         goal = self.planner.get_map_coordinates(intermediate_goal)
         stop = int(self._config.TASK.ACTION_MAP.MAP_SIZE ** 2 // 2) == intermediate_goal
