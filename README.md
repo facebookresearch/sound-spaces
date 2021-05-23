@@ -18,7 +18,7 @@ Moving around in the world is naturally a multisensory experience, but today's e
 If you use the SoundSpaces platform in your research, please cite the following [paper](https://arxiv.org/pdf/1912.11474.pdf):
 ```
 @inproceedings{chen20soundspaces,
-  title     =     {SoundSpaces: Audio-Visual Navigaton in 3D Environments,
+  title     =     {SoundSpaces: Audio-Visual Navigaton in 3D Environments},
   author    =     {Changan Chen and Unnat Jain and Carl Schissler and Sebastia Vicenc Amengual Gari and Ziad Al-Halah and Vamsi Krishna Ithapu and Philip Robinson and Kristen Grauman},
   booktitle =     {ECCV},
   year      =     {2020}
