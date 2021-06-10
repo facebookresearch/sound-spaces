@@ -191,6 +191,8 @@ class BaseRLTrainer(BaseTrainer):
         prev_actions,
         batch,
         rgb_frames,
+        test_em=None,
+        descriptor_pred_gt=None
     ):
         # pausing self.envs with no new episode
         if len(envs_to_pause) > 0:
@@ -198,6 +200,10 @@ class BaseRLTrainer(BaseTrainer):
             for idx in reversed(envs_to_pause):
                 state_index.pop(idx)
                 envs.pause_at(idx)
+                if test_em is not None:
+                    test_em.pop_at(idx)
+                if descriptor_pred_gt is not None:
+                    descriptor_pred_gt.pop(idx)
 
             # indexing along the batch dimensions
             test_recurrent_hidden_states = test_recurrent_hidden_states[
@@ -212,12 +218,24 @@ class BaseRLTrainer(BaseTrainer):
 
             rgb_frames = [rgb_frames[i] for i in state_index]
 
-        return (
-            envs,
-            test_recurrent_hidden_states,
-            not_done_masks,
-            current_episode_reward,
-            prev_actions,
-            batch,
-            rgb_frames,
-        )
+        if test_em is None:
+            return (
+                envs,
+                test_recurrent_hidden_states,
+                not_done_masks,
+                current_episode_reward,
+                prev_actions,
+                batch,
+                rgb_frames,
+            )
+        else:
+            return (
+                envs,
+                test_recurrent_hidden_states,
+                not_done_masks,
+                test_em,
+                current_episode_reward,
+                prev_actions,
+                batch,
+                rgb_frames,
+            )

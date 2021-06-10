@@ -31,7 +31,7 @@ _C.TRAINER_NAME = "AVWanTrainer"
 _C.ENV_NAME = "MapNavEnv"
 _C.SIMULATOR_GPU_ID = 0
 _C.TORCH_GPU_ID = 0
-_C.MODEL_DIR = 'data/models/av_wan/output'
+_C.MODEL_DIR = 'data/models/output'
 _C.VIDEO_OPTION = ["disk", "tensorboard"]
 _C.VISUALIZATION_OPTION = ["top_down_map"]
 _C.TENSORBOARD_DIR = "tb"
@@ -130,6 +130,8 @@ _TC.SIMULATOR.AUDIO.SOURCE_SOUND_DIR = "data/sounds/1s_all"
 _TC.SIMULATOR.AUDIO.METADATA_DIR = "data/metadata"
 _TC.SIMULATOR.AUDIO.POINTS_FILE = 'points.txt'
 _TC.SIMULATOR.AUDIO.GRAPH_FILE = 'graph.pkl'
+_TC.SIMULATOR.AUDIO.HAS_DISTRACTOR_SOUND = False
+_TC.SIMULATOR.AUDIO.EVERLASTING = True
 # -----------------------------------------------------------------------------
 # DistanceToGoal Measure
 # -----------------------------------------------------------------------------

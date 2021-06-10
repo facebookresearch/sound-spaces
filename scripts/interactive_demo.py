@@ -15,7 +15,7 @@ from habitat.sims.habitat_simulator.actions import HabitatSimActions
 from habitat.utils.visualizations import maps
 from habitat.datasets import make_dataset
 from habitat.utils.visualizations.utils import observations_to_image
-from ss_baselines.common.environments import NavRLEnv
+from ss_baselines.common.environments import AudioNavRLEnv
 from ss_baselines.common.utils import images_to_video_with_audio
 from ss_baselines.av_nav.config import get_config
 
@@ -229,7 +229,7 @@ def main():
     config.freeze()
     print(config)
     dataset = make_dataset(id_dataset=config.TASK_CONFIG.DATASET.TYPE, config=config.TASK_CONFIG.DATASET)
-    env = NavRLEnv(config=config, dataset=dataset)
+    env = AudioNavRLEnv(config=config, dataset=dataset)
 
     if args.keys == '':
         interactive_demo(config, env)

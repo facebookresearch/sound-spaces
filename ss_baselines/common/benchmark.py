@@ -21,7 +21,7 @@ from tqdm import tqdm
 from habitat import Config
 from habitat.core.agent import Agent
 # from habitat.core.env import Env
-from ss_baselines.common.environments import NavRLEnv
+from ss_baselines.common.environments import AudioNavRLEnv
 from habitat.datasets import make_dataset
 
 
@@ -46,7 +46,7 @@ class Benchmark:
         dummy_config.freeze()
 
         dataset = make_dataset(id_dataset=task_config.DATASET.TYPE, config=task_config.DATASET)
-        self._env = NavRLEnv(config=dummy_config, dataset=dataset)
+        self._env = AudioNavRLEnv(config=dummy_config, dataset=dataset)
 
     def evaluate(
         self, agent: Agent, num_episodes: Optional[int] = None

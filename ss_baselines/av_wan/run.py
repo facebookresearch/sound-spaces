@@ -74,12 +74,10 @@ def main():
     )
     args = parser.parse_args()
 
-    # repo = git.Repo(search_parent_directories=True)
-    # logging.info('Current git head hash code: {}'.format(repo.head.object.hexsha))
-
     if args.eval_best:
         best_ckpt_idx = find_best_ckpt_idx(os.path.join(args.model_dir, 'tb'))
         best_ckpt_path = os.path.join(args.model_dir, 'data', f'ckpt.{best_ckpt_idx}.pth')
+        print(f'Evaluating the best checkpoint: {best_ckpt_path}')
         args.opts += ['EVAL_CKPT_PATH_DIR', best_ckpt_path]
 
     # run exp

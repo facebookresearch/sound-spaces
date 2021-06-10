@@ -24,6 +24,14 @@ from habitat.core.simulator import (
     SensorTypes,
     Simulator,
 )
+from habitat.utils.geometry_utils import (
+    quaternion_from_coeff,
+    quaternion_rotate_vector,
+)
+from habitat.tasks.utils import cartesian_to_polar
+from soundspaces.mp3d_utils import CATEGORY_INDEX_MAPPING
+from soundspaces.utils import convert_semantic_object_to_rgb
+from soundspaces.mp3d_utils import HouseReader
 
 
 @registry.register_sensor
@@ -54,6 +62,7 @@ class AudioGoalSensor(Sensor):
 
 @registry.register_sensor
 class SpectrogramSensor(Sensor):
+    cls_uuid: str = "spectrogram"
     def __init__(self, *args: Any, sim: Simulator, config: Config, **kwargs: Any):
         self._sim = sim
         super().__init__(config=config)
@@ -437,3 +446,446 @@ class Collision(Sensor):
         self, *args: Any, observations, episode: Episode, **kwargs: Any
     ) -> object:
         return [self._sim.previous_step_collided]
+
+@registry.register_sensor(name="Category")
+class Category(Sensor):
+    cls_uuid: str = "category"
+
+    def __init__(
+        self, sim: Union[Simulator, Config], config: Config, *args: Any, **kwargs: Any
+    ):
+        super().__init__(config=config)
+        self._sim = sim
+
+    def _get_uuid(self, *args: Any, **kwargs: Any):
+        return self.cls_uuid
+
+    def _get_sensor_type(self, *args: Any, **kwargs: Any):
+        return SensorTypes.COLOR
+
+    def _get_observation_space(self, *args: Any, **kwargs: Any):
+        return spaces.Box(
+            low=0,
+            high=1,
+            shape=(len(CATEGORY_INDEX_MAPPING.keys()),),
+            dtype=bool
+        )
+
+    def get_observation(
+        self, *args: Any, observations, episode: Episode, **kwargs: Any
+    ) -> object:
+        index = CATEGORY_INDEX_MAPPING[episode.object_category]
+        onehot = np.zeros(len(CATEGORY_INDEX_MAPPING.keys()))
+        onehot[index] = 1
+
+        return onehot
+
+
+@registry.register_sensor(name="CategoryBelief")
+class CategoryBelief(Sensor):
+    cls_uuid: str = "category_belief"
+
+    def __init__(
+        self, sim: Union[Simulator, Config], config: Config, *args: Any, **kwargs: Any
+    ):
+        super().__init__(config=config)
+        self._sim = sim
+
+    def _get_uuid(self, *args: Any, **kwargs: Any):
+        return self.cls_uuid
+
+    def _get_sensor_type(self, *args: Any, **kwargs: Any):
+        return SensorTypes.COLOR
+
+    def _get_observation_space(self, *args: Any, **kwargs: Any):
+        return spaces.Box(
+            low=0,
+            high=1,
+            shape=(len(CATEGORY_INDEX_MAPPING.keys()),),
+            dtype=bool
+        )
+
+    def get_observation(
+        self, *args: Any, observations, episode: Episode, **kwargs: Any
+    ) -> object:
+        belief = np.zeros(len(CATEGORY_INDEX_MAPPING.keys()))
+
+        return belief
+
+
+@registry.register_sensor(name="LocationBelief")
+class LocationBelief(Sensor):
+    cls_uuid: str = "location_belief"
+
+    def __init__(
+        self, sim: Union[Simulator, Config], config: Config, *args: Any, **kwargs: Any
+    ):
+        super().__init__(config=config)
+        self._sim = sim
+
+    def _get_uuid(self, *args: Any, **kwargs: Any):
+        return self.cls_uuid
+
+    def _get_sensor_type(self, *args: Any, **kwargs: Any):
+        return SensorTypes.COLOR
+
+    def _get_observation_space(self, *args: Any, **kwargs: Any):
+        return spaces.Box(
+            low=0,
+            high=1,
+            shape=(2,),
+            dtype=bool
+        )
+
+    def get_observation(
+        self, *args: Any, observations, episode: Episode, **kwargs: Any
+    ) -> object:
+        belief = np.zeros(2)
+        return belief
+
+
+@registry.register_sensor(name="MPCAT40Index")
+class MPCAT40Index(Sensor):
+    def __init__(
+        self, sim: Union[Simulator, Config], config: Config, *args: Any, **kwargs: Any
+    ):
+        self.config = config
+        self._category_mapping = {
+                'chair': 3,
+                'table': 5,
+                'picture': 6,
+                'cabinet': 7,
+                'cushion': 8,
+                'sofa': 10,
+                'bed': 11,
+                'chest_of_drawers': 13,
+                'plant': 14,
+                'sink': 15,
+                'toilet': 18,
+                'stool': 19,
+                'towel': 20,
+                'tv_monitor': 22,
+                'shower': 23,
+                'bathtub': 25,
+                'counter': 26,
+                'fireplace': 27,
+                'gym_equipment': 33,
+                'seating': 34,
+                'clothes': 38
+            }
+        super().__init__(config=config)
+        self._sim = sim
+
+    def _get_uuid(self, *args: Any, **kwargs: Any):
+        return "mpcat40_index"
+
+    def _get_sensor_type(self, *args: Any, **kwargs: Any):
+        return SensorTypes.COLOR
+
+    def _get_observation_space(self, *args: Any, **kwargs: Any):
+        return spaces.Box(
+            low=0,
+            high=1,
+            shape=(1,),
+            dtype=bool
+        )
+
+    def get_observation(
+        self, *args: Any, observations, episode: Episode, **kwargs: Any
+    ) -> object:
+        index = self._category_mapping[episode.object_category]
+        encoding = np.array([index])
+
+        return encoding
+
+
+@registry.register_sensor(name="SemanticObjectSensor")
+class SemanticObjectSensor(Sensor):
+    r"""Lists the object categories for each pixel location.
+
+    Args:
+        sim: reference to the simulator for calculating task observations.
+    """
+    cls_uuid: str = "semantic_object"
+
+    def __init__(
+        self, sim: Simulator, config: Config, *args: Any, **kwargs: Any
+    ):
+        self._sim = sim
+        self._current_episode_id = None
+        self.mapping = None
+        # self._cached_observation = None
+        self._initialize_category_mappings()
+
+        super().__init__(config=config)
+
+    def _get_uuid(self, *args: Any, **kwargs: Any):
+        return self.cls_uuid
+
+    def _initialize_category_mappings(self):
+        self.category_to_task_category_id = {
+            'chair': 0,
+            'table': 1,
+            'picture': 2,
+            'cabinet': 3,
+            'cushion': 4,
+            'sofa': 5,
+            'bed': 6,
+            'chest_of_drawers': 7,
+            'plant': 8,
+            'sink': 9,
+            'toilet': 10,
+            'stool': 11,
+            'towel': 12,
+            'tv_monitor': 13,
+            'shower': 14,
+            'bathtub': 15,
+            'counter': 16,
+            'fireplace': 17,
+            'gym_equipment': 18,
+            'seating': 19,
+            'clothes': 20
+        }
+        self.category_to_mp3d_category_id = {
+            'chair': 3,
+            'table': 5,
+            'picture': 6,
+            'cabinet': 7,
+            'cushion': 8,
+            'sofa': 10,
+            'bed': 11,
+            'chest_of_drawers': 13,
+            'plant': 14,
+            'sink': 15,
+            'toilet': 18,
+            'stool': 19,
+            'towel': 20,
+            'tv_monitor': 22,
+            'shower': 23,
+            'bathtub': 25,
+            'counter': 26,
+            'fireplace': 27,
+            'gym_equipment': 33,
+            'seating': 34,
+            'clothes': 38
+        }
+        self.num_task_categories = np.max(
+            list(self.category_to_task_category_id.values())
+        ) + 1
+        self.mp3d_id_to_task_id = np.ones((200, ), dtype=np.int64) * -1
+        for k in self.category_to_task_category_id.keys():
+            v1 = self.category_to_task_category_id[k]
+            v2 = self.category_to_mp3d_category_id[k]
+            self.mp3d_id_to_task_id[v2] = v1
+        # Map unknown classes to a new category
+        self.mp3d_id_to_task_id[
+            self.mp3d_id_to_task_id == -1
+        ] = self.num_task_categories
+
+    def _get_sensor_type(self, *args: Any, **kwargs: Any):
+        return SensorTypes.COLOR
+
+    def _get_observation_space(self, *args: Any, **kwargs: Any):
+        if self.config.CONVERT_TO_RGB:
+            observation_space = spaces.Box(
+                low=0,
+                high=255,
+                shape=(self.config.HEIGHT, self.config.WIDTH, 3),
+                dtype=np.uint8,
+            )
+        else:
+            observation_space = spaces.Box(
+                low=np.iinfo(np.uint32).min,
+                high=np.iinfo(np.uint32).max,
+                shape=(self.config.HEIGHT, self.config.WIDTH),
+                dtype=np.uint32,
+            )
+        return observation_space
+
+    def get_observation(
+        self, *args: Any, observations, episode, **kwargs: Any
+    ):
+        episode_uniq_id = f"{episode.scene_id} {episode.episode_id}"
+        if self._current_episode_id != episode_uniq_id:
+            self._current_episode_id = episode_uniq_id
+            # scene = self._sim.semantic_annotations()
+            # instance_id_to_mp3d_id = {
+            #     int(obj.id.split("_")[-1]): obj.category.index() for obj in scene.objects
+            # }
+            # self.instance_id_to_mp3d_id = np.array(
+            #     [
+            #         instance_id_to_mp3d_id[i]
+            #         for i in range(len(instance_id_to_mp3d_id))
+            #     ]
+            # )
+            reader = HouseReader(self._sim._current_scene.replace('.glb', '.house'))
+            instance_id_to_mp3d_id = reader.compute_object_to_category_index_mapping()
+            self.instance_id_to_mp3d_id = np.array([instance_id_to_mp3d_id[i] for i in range(len(instance_id_to_mp3d_id))])
+
+        # Pre-process semantic observations to remove invalid values
+        semantic = np.copy(observations["semantic"])
+        semantic[semantic >= self.instance_id_to_mp3d_id.shape[0]] = 0
+        # Map from instance id to semantic id
+        semantic_object = np.take(self.instance_id_to_mp3d_id, semantic)
+        # Map from semantic id to task id
+        semantic_object = np.take(self.mp3d_id_to_task_id, semantic_object)
+        if self.config.CONVERT_TO_RGB:
+            semantic_object = SemanticObjectSensor.convert_semantic_map_to_rgb(
+                semantic_object
+            )
+        # self._cached_observation = semantic_object
+
+        return semantic_object
+
+    @staticmethod
+    def convert_semantic_map_to_rgb(semantic_map):
+        return convert_semantic_object_to_rgb(semantic_map)
+
+
+@registry.register_sensor(name="PoseSensor")
+class PoseSensor(Sensor):
+    r"""The agents current location and heading in the coordinate frame defined by the
+    episode, i.e. the axis it faces along and the origin is defined by its state at
+    t=0. Additionally contains the time-step of the episode.
+
+    Args:
+        sim: reference to the simulator for calculating task observations.
+        config: Contains the DIMENSIONALITY field for the number of dimensions to express the agents position
+    Attributes:
+        _dimensionality: number of dimensions used to specify the agents position
+    """
+    cls_uuid: str = "pose"
+
+    def __init__(
+        self, sim: Simulator, config: Config, *args: Any, **kwargs: Any
+    ):
+        self._sim = sim
+        self._episode_time = 0
+        self._current_episode_id = None
+        super().__init__(config=config)
+
+    def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+        return self.cls_uuid
+
+    def _get_sensor_type(self, *args: Any, **kwargs: Any):
+        return SensorTypes.POSITION
+
+    def _get_observation_space(self, *args: Any, **kwargs: Any):
+        return spaces.Box(
+            low=np.finfo(np.float32).min,
+            high=np.finfo(np.float32).max,
+            shape=(4,),
+            dtype=np.float32,
+        )
+
+    def _quat_to_xy_heading(self, quat):
+        direction_vector = np.array([0, 0, -1])
+
+        heading_vector = quaternion_rotate_vector(quat, direction_vector)
+
+        phi = cartesian_to_polar(-heading_vector[2], heading_vector[0])[1]
+        return np.array([phi], dtype=np.float32)
+
+    def get_observation(
+        self, observations, episode, *args: Any, **kwargs: Any
+    ):
+        episode_uniq_id = f"{episode.scene_id} {episode.episode_id}"
+        if episode_uniq_id != self._current_episode_id:
+            self._episode_time = 0.0
+            self._current_episode_id = episode_uniq_id
+
+        agent_state = self._sim.get_agent_state()
+
+        origin = np.array(episode.start_position, dtype=np.float32)
+        rotation_world_start = quaternion_from_coeff(episode.start_rotation)
+
+        agent_position_xyz = agent_state.position
+        rotation_world_agent = agent_state.rotation
+
+        agent_position_xyz = quaternion_rotate_vector(
+            rotation_world_start.inverse(), agent_position_xyz - origin
+        )
+
+        agent_heading = self._quat_to_xy_heading(
+            rotation_world_agent.inverse() * rotation_world_start
+        )
+
+        ep_time = self._episode_time
+        self._episode_time += 1.0
+
+        return np.array(
+            [-agent_position_xyz[2], agent_position_xyz[0], agent_heading, ep_time],
+            dtype=np.float32
+        )
+
+
+@registry.register_sensor
+class ProximitySensor(Sensor):
+    r"""Sensor for observing the distance to the closest obstacle
+
+    Args:
+        sim: reference to the simulator for calculating task observations.
+        config: config for the sensor.
+    """
+    cls_uuid: str = "proximity"
+
+    def __init__(self, sim, config, *args: Any, **kwargs: Any):
+        self._sim = sim
+        self._max_detection_radius = getattr(
+            config, "MAX_DETECTION_RADIUS", 2.0
+        )
+        super().__init__(config=config)
+
+    def _get_uuid(self, *args: Any, **kwargs: Any) -> str:
+        return self.cls_uuid
+
+    def _get_sensor_type(self, *args: Any, **kwargs: Any):
+        return SensorTypes.TACTILE
+
+    def _get_observation_space(self, *args: Any, **kwargs: Any):
+        return spaces.Box(
+            low=0.0,
+            high=self._max_detection_radius,
+            shape=(1,),
+            dtype=np.float32,
+        )
+
+    def get_observation(
+        self, observations, *args: Any, episode, **kwargs: Any
+    ):
+        current_position = self._sim.get_agent_state().position
+
+        return np.array(
+            [
+                self._sim.distance_to_closest_obstacle(
+                    current_position, self._max_detection_radius
+                )
+            ],
+            dtype=np.float32,
+        )
+
+
+@registry.register_sensor
+class OracleActionSensor(Sensor):
+    def __init__(self, *args: Any, sim: Simulator, config: Config, **kwargs: Any):
+        self._sim = sim
+        super().__init__(config=config)
+
+    def _get_uuid(self, *args: Any, **kwargs: Any):
+        return "oracle_action_sensor"
+
+    def _get_sensor_type(self, *args: Any, **kwargs: Any):
+        return SensorTypes.PATH
+
+    def _get_observation_space(self, *args: Any, **kwargs: Any):
+        sensor_shape = (1,)
+
+        return spaces.Box(
+            low=np.finfo(np.float32).min,
+            high=np.finfo(np.float32).max,
+            shape=sensor_shape,
+            dtype=np.float32,
+        )
+
+    def get_observation(self, *args: Any, observations, episode: Episode, **kwargs: Any):
+        return self._sim.get_oracle_action()

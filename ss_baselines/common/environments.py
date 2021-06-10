@@ -33,8 +33,8 @@ def get_env_class(env_name: str) -> Type[habitat.RLEnv]:
     return baseline_registry.get_env(env_name)
 
 
-@baseline_registry.register_env(name="NavRLEnv")
-class NavRLEnv(habitat.RLEnv):
+@baseline_registry.register_env(name="AudioNavRLEnv")
+class AudioNavRLEnv(habitat.RLEnv):
     def __init__(self, config: Config, dataset: Optional[Dataset] = None):
         self._rl_config = config.RL
         self._core_env_config = config.TASK_CONFIG

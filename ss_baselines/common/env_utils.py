@@ -17,7 +17,7 @@ from habitat import Config, Env, RLEnv, VectorEnv
 from habitat.datasets import make_dataset
 from ss_baselines.common.sync_vector_env import SyncVectorEnv
 
-SCENES = ['apartment_0', 'apartment_1', 'apartment_2', 'frl_apartment_0', 'frl_apartment_1', 'frl_apartment_2',
+REPLICA_SCENES = ['apartment_0', 'apartment_1', 'apartment_2', 'frl_apartment_0', 'frl_apartment_1', 'frl_apartment_2',
           'frl_apartment_3', 'frl_apartment_4', 'frl_apartment_5', 'office_0', 'office_1', 'office_2',
           'office_3', 'office_4', 'hotel_0', 'room_0', 'room_1', 'room_2']
 
@@ -44,28 +44,26 @@ def construct_envs(
     dataset = make_dataset(config.TASK_CONFIG.DATASET.TYPE)
     scenes = dataset.get_scenes_to_load(config.TASK_CONFIG.DATASET)
 
-    # if len(scenes) > 0:
-    #     # random.shuffle(scenes)
-    #     assert len(scenes) >= num_processes, (
-    #         "reduce the number of processes as there "
-    #         "aren't enough number of scenes"
-    #     )
-    if len(scenes) >= num_processes:
-        # rearrange scenes in the order of data scale since there is a severe imbalance of data size
+    # rearrange scenes in the order of scene size since there is a severe imbalance of data size
+    if "replica" in config.TASK_CONFIG.DATASET.SCENES_DIR:
         scenes_new = list()
-        for scene in SCENES:
+        for scene in REPLICA_SCENES:
             if scene in scenes:
                 scenes_new.append(scene)
         scenes = scenes_new
 
-        scene_splits = [[] for _ in range(num_processes)]
-        for idx, scene in enumerate(scenes):
-            scene_splits[idx % len(scene_splits)].append(scene)
-        assert sum(map(len, scene_splits)) == len(scenes)
-    else:
-        scene_splits = [copy.deepcopy(scenes) for _ in range(num_processes)]
-        for split in scene_splits:
-            random.shuffle(split)
+    if len(scenes) > 0:
+        # random.shuffle(scenes)
+        assert len(scenes) >= num_processes, (
+            "reduce the number of processes as there "
+            "aren't enough number of scenes"
+        )
+
+    scene_splits = [[] for _ in range(num_processes)]
+    for idx, scene in enumerate(scenes):
+        scene_splits[idx % len(scene_splits)].append(scene)
+
+    assert sum(map(len, scene_splits)) == len(scenes)
 
     for i in range(num_processes):
         task_config = config.TASK_CONFIG.clone()

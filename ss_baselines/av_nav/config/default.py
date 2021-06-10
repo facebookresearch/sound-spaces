@@ -28,7 +28,7 @@ _C.BASE_TASK_CONFIG_PATH = "configs/tasks/pointgoal.yaml"
 _C.TASK_CONFIG = CN()  # task_config will be stored as a config node
 _C.CMD_TRAILING_OPTS = []  # store command line options as list of strings
 _C.TRAINER_NAME = "AVNavTrainer"
-_C.ENV_NAME = "NavRLEnv"
+_C.ENV_NAME = "AudioNavRLEnv"
 _C.SIMULATOR_GPU_ID = 0
 _C.TORCH_GPU_ID = 0
 _C.VIDEO_OPTION = ["disk", "tensorboard"]
@@ -119,6 +119,8 @@ _TC.SIMULATOR.AUDIO.SOURCE_SOUND_DIR = "data/sounds/1s_all"
 _TC.SIMULATOR.AUDIO.METADATA_DIR = "data/metadata"
 _TC.SIMULATOR.AUDIO.POINTS_FILE = 'points.txt'
 _TC.SIMULATOR.AUDIO.GRAPH_FILE = 'graph.pkl'
+_TC.SIMULATOR.AUDIO.HAS_DISTRACTOR_SOUND = False
+_TC.SIMULATOR.AUDIO.EVERLASTING = True
 # -----------------------------------------------------------------------------
 # DistanceToGoal Measure
 # -----------------------------------------------------------------------------
@@ -177,7 +179,7 @@ def get_config(
 
     # config_name = os.path.basename(config_paths).split('.')[0]
     if model_dir is None:
-        model_dir = 'data/models'
+        model_dir = 'data/models/output'
     config.TENSORBOARD_DIR = os.path.join(model_dir, 'tb')
     config.CHECKPOINT_FOLDER = os.path.join(model_dir, 'data')
     config.VIDEO_DIR = os.path.join(model_dir, 'video_dir')

@@ -1,6 +1,6 @@
 BASE_TASK_CONFIG_PATH: "configs/audionav/av_nav/mp3d/interactive_demo.yaml"
 TRAINER_NAME: "ppo"
-ENV_NAME: "NavRLEnv"
+ENV_NAME: "AudioNavRLEnv"
 SIMULATOR_GPU_ID: 0
 TORCH_GPU_ID: 0
 TENSORBOARD_DIR: "tb"

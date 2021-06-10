@@ -8,6 +8,7 @@
 
 import argparse
 import logging
+import os
 
 import warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
@@ -17,6 +18,7 @@ import torch
 import soundspaces
 from ss_baselines.common.baseline_registry import baseline_registry
 from ss_baselines.av_nav.config.default import get_config
+from ss_baselines.av_wan.run import find_best_ckpt_idx
 
 
 def main():
@@ -59,6 +61,12 @@ def main():
         help="Modify config options from command line"
     )
     parser.add_argument(
+        "--eval-best",
+        default=False,
+        action='store_true',
+        help="Modify config options from command line"
+    )
+    parser.add_argument(
         "--prev-ckpt-ind",
         type=int,
         default=-1,
@@ -66,8 +74,11 @@ def main():
     )
     args = parser.parse_args()
 
-    # repo = git.Repo(search_parent_directories=True)
-    # logging.info('Current git head hash code: {}'.format(repo.head.object.hexsha))
+    if args.eval_best:
+        best_ckpt_idx = find_best_ckpt_idx(os.path.join(args.model_dir, 'tb'))
+        best_ckpt_path = os.path.join(args.model_dir, 'data', f'ckpt.{best_ckpt_idx}.pth')
+        print(f'Evaluating the best checkpoint: {best_ckpt_path}')
+        args.opts += ['EVAL_CKPT_PATH_DIR', best_ckpt_path]
 
     # run exp
     config = get_config(args.exp_config, args.opts, args.model_dir, args.run_type, args.overwrite)

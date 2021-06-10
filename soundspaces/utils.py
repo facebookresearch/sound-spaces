@@ -8,6 +8,8 @@ import os
 import pickle
 import numpy as np
 import torch
+from PIL import Image
+from habitat_sim.utils.common import d3_40_colors_rgb
 
 
 def load_metadata(parent_folder):
@@ -44,3 +46,11 @@ def _to_tensor(v):
         return torch.from_numpy(v)
     else:
         return torch.tensor(v, dtype=torch.float)
+
+
+def convert_semantic_object_to_rgb(x):
+    semantic_img = Image.new("P", (x.shape[1], x.shape[0]))
+    semantic_img.putpalette(d3_40_colors_rgb.flatten())
+    semantic_img.putdata((x.flatten() % 40).astype(np.uint8))
+    semantic_img = np.array(semantic_img.convert("RGB"))
+    return semantic_img
