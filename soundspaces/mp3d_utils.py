@@ -23,13 +23,9 @@ SCENE_SPLITS = {
              'fzynW3qQPVF', 'UwV83HsGsw3', 'q9vSo1VnCiC', 'ARNzJeq3xxb', 'rqfALeAoiTq', 'gYvKGZ5eRqb',
              'YFuZgdQ5vWj', 'jtcxE69GiFV', 'gxdoqLR6rwA'],
 }
-SCENE_SPLITS['test_seen'] = SCENE_SPLITS['test']
-SCENE_SPLITS['test_heard'] = SCENE_SPLITS['test']
 SCENE_SPLITS['train_distractor'] = SCENE_SPLITS['train']
 SCENE_SPLITS['val_distractor'] = SCENE_SPLITS['val']
 SCENE_SPLITS['test_distractor'] = SCENE_SPLITS['test']
-SCENE_SPLITS['test_distractor_heard'] = SCENE_SPLITS['test']
-SCENE_SPLITS['test_demo'] = SCENE_SPLITS['test']
 
 MPCAT40_CATEGORY_INDICES = [3, 5, 6, 7, 8, 10, 11, 13, 14, 15, 18, 19, 20, 22, 23, 25, 26, 27, 33, 34, 38]
 
