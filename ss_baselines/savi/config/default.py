@@ -292,7 +292,6 @@ def get_config(
 
     config.TASK_CONFIG.defrost()
     config.TASK_CONFIG.SIMULATOR.USE_SYNC_VECENV = config.USE_SYNC_VECENV
-    # config.TASK_CONFIG.SIMULATOR.SEMANTIC_OBJECT_SENSOR = config.TASK_CONFIG.TASK.SEMANTIC_OBJECT_SENSOR
     config.TASK_CONFIG.freeze()
     config.freeze()
     return config

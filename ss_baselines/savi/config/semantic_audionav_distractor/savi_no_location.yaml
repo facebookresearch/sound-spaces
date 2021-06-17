@@ -9,7 +9,7 @@ VIDEO_OPTION: []
 VISUALIZATION_OPTION: []
 
 EVAL:
-  SPLIT: "val_distractor"
+  SPLIT: "val"
   USE_CKPT_CONFIG: True
 
 RL:
@@ -34,7 +34,7 @@ RL:
     reward_window_size: 50
     use_normalized_advantage: False
     policy_type: "smt"
-    use_belief_predictor: False
+    use_belief_predictor: True
     use_external_memory: True
     SCENE_MEMORY_TRANSFORMER:
       memory_size: 150
@@ -48,6 +48,12 @@ RL:
       pretrained_path: ''
       freeze_encoders: True
       pretraining: False
+    BELIEF_PREDICTOR:
+      online_training: False
+      train_encoder: False
+      lr: 1e-3
+      use_label_belief: True
+      use_location_belief: False
   DDPPO:
     sync_frac: 0.6
     distrib_backend: "GLOO"

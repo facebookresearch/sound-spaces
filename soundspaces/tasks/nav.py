@@ -309,12 +309,14 @@ class EgoMap(Sensor):
         xs = self.proj_xs.reshape(-1)
         ys = self.proj_ys.reshape(-1)
         depth_float = depth_float.reshape(-1)
+
         # Filter out invalid depths
         max_forward_range = self.map_size * self.map_res
         valid_depths = (depth_float != 0.0) & (depth_float <= max_forward_range)
         xs = xs[valid_depths]
         ys = ys[valid_depths]
         depth_float = depth_float[valid_depths]
+
         # Unproject
         # negate depth as the camera looks along -Z
         xys = np.vstack((xs * depth_float,
@@ -323,14 +325,6 @@ class EgoMap(Sensor):
         inv_K = self.inverse_intrinsic_matrix
         xyz_camera = np.matmul(inv_K, xys).T # XYZ in the camera coordinate system
         xyz_camera = xyz_camera[:, :3] / xyz_camera[:, 3][:, np.newaxis]
-
-        # fig = plt.figure()
-        # ax = plt.axes(projection='3d')
-        # ax.set_xlabel('x')
-        # ax.set_ylabel('y')
-        # ax.set_zlabel('z');
-        # ax.scatter3D(xyz_camera[:, 0], xyz_camera[:, 1], xyz_camera[:, 2])
-        # plt.show()
 
         return xyz_camera
 
@@ -419,33 +413,6 @@ def asnumpy(v):
     else:
         raise ValueError('Invalid input')
 
-
-@registry.register_sensor(name="Collision")
-class Collision(Sensor):
-    def __init__(
-        self, sim: Union[Simulator, Config], config: Config, *args: Any, **kwargs: Any
-    ):
-        super().__init__(config=config)
-        self._sim = sim
-
-    def _get_uuid(self, *args: Any, **kwargs: Any):
-        return "collision"
-
-    def _get_sensor_type(self, *args: Any, **kwargs: Any):
-        return SensorTypes.COLOR
-
-    def _get_observation_space(self, *args: Any, **kwargs: Any):
-        return spaces.Box(
-            low=0,
-            high=1,
-            shape=(1,),
-            dtype=bool
-        )
-
-    def get_observation(
-        self, *args: Any, observations, episode: Episode, **kwargs: Any
-    ) -> object:
-        return [self._sim.previous_step_collided]
 
 @registry.register_sensor(name="Category")
 class Category(Sensor):
@@ -614,7 +581,6 @@ class SemanticObjectSensor(Sensor):
         self._sim = sim
         self._current_episode_id = None
         self.mapping = None
-        # self._cached_observation = None
         self._initialize_category_mappings()
 
         super().__init__(config=config)
@@ -708,16 +674,6 @@ class SemanticObjectSensor(Sensor):
         episode_uniq_id = f"{episode.scene_id} {episode.episode_id}"
         if self._current_episode_id != episode_uniq_id:
             self._current_episode_id = episode_uniq_id
-            # scene = self._sim.semantic_annotations()
-            # instance_id_to_mp3d_id = {
-            #     int(obj.id.split("_")[-1]): obj.category.index() for obj in scene.objects
-            # }
-            # self.instance_id_to_mp3d_id = np.array(
-            #     [
-            #         instance_id_to_mp3d_id[i]
-            #         for i in range(len(instance_id_to_mp3d_id))
-            #     ]
-            # )
             reader = HouseReader(self._sim._current_scene.replace('.glb', '.house'))
             instance_id_to_mp3d_id = reader.compute_object_to_category_index_mapping()
             self.instance_id_to_mp3d_id = np.array([instance_id_to_mp3d_id[i] for i in range(len(instance_id_to_mp3d_id))])
@@ -733,7 +689,6 @@ class SemanticObjectSensor(Sensor):
             semantic_object = SemanticObjectSensor.convert_semantic_map_to_rgb(
                 semantic_object
             )
-        # self._cached_observation = semantic_object
 
         return semantic_object
 

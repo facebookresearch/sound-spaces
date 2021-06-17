@@ -8,10 +8,6 @@ CHECKPOINT_INTERVAL: 50
 VIDEO_OPTION: []
 VISUALIZATION_OPTION: []
 
-EVAL:
-  SPLIT: "val_distractor"
-  USE_CKPT_CONFIG: True
-
 RL:
   PPO:
     clip_param: 0.2
@@ -52,7 +48,7 @@ RL:
       online_training: True
       train_encoder: False
       lr: 1e-3
-      use_label_belief: False
+      use_label_belief: True
       use_location_belief: True
   DDPPO:
     sync_frac: 0.6

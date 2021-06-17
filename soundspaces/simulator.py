@@ -106,28 +106,25 @@ class SoundSpacesSim(Simulator, ABC):
         pass
 
     def __init__(self, config: Config) -> None:
-        if not config.USE_RENDERED_OBSERVATIONS:
-            super().__init__(config)
-        else:
-            self.config = config
-            agent_config = self._get_agent_config()
-            sim_sensors = []
-            for sensor_name in agent_config.SENSORS:
-                sensor_cfg = getattr(self.config, sensor_name)
-                sensor_type = registry.get_sensor(sensor_cfg.TYPE)
+        self.config = config
+        agent_config = self._get_agent_config()
+        sim_sensors = []
+        for sensor_name in agent_config.SENSORS:
+            sensor_cfg = getattr(self.config, sensor_name)
+            sensor_type = registry.get_sensor(sensor_cfg.TYPE)
 
-                assert sensor_type is not None, "invalid sensor type {}".format(
-                    sensor_cfg.TYPE
-                )
-                sim_sensors.append(sensor_type(sensor_cfg))
-
-            self._sensor_suite = SensorSuite(sim_sensors)
-            self.sim_config = self.create_sim_config(self._sensor_suite)
-            self._current_scene = self.sim_config.sim_cfg.scene.id
-            self._action_space = spaces.Discrete(
-                len(self.sim_config.agents[0].action_space)
+            assert sensor_type is not None, "invalid sensor type {}".format(
+                sensor_cfg.TYPE
             )
-            self._prev_sim_obs = None
+            sim_sensors.append(sensor_type(sensor_cfg))
+
+        self._sensor_suite = SensorSuite(sim_sensors)
+        self.sim_config = self.create_sim_config(self._sensor_suite)
+        self._current_scene = self.sim_config.sim_cfg.scene.id
+        self._action_space = spaces.Discrete(
+            len(self.sim_config.agents[0].action_space)
+        )
+        self._prev_sim_obs = None
 
         self._source_position_index = None
         self._receiver_position_index = None
@@ -166,6 +163,8 @@ class SoundSpacesSim(Simulator, ABC):
             self._sim = DummySimulator()
             with open(self.current_scene_observation_file, 'rb') as fo:
                 self._frame_cache = pickle.load(fo)
+        else:
+            self._sim = habitat_sim.Simulator(config=self.sim_config)
 
     def create_sim_config(
             self, _sensor_suite: SensorSuite
@@ -217,14 +216,6 @@ class SoundSpacesSim(Simulator, ABC):
         agent_config = getattr(self.config, agent_name)
         return agent_config
 
-    def get_agent_state(self, agent_id: int = 0) -> habitat_sim.AgentState:
-        if not self.config.USE_RENDERED_OBSERVATIONS:
-            agent_state = super().get_agent_state(agent_id)
-        else:
-            agent_state = self._sim.get_agent_state()
-
-        return agent_state
-
     def _update_agents_state(self) -> bool:
         is_updated = False
         for agent_id, _ in enumerate(self.config.AGENTS):
@@ -246,6 +237,12 @@ class SoundSpacesSim(Simulator, ABC):
         agent_config = getattr(self.config, agent_name)
         return agent_config
 
+    def get_agent_state(self, agent_id: int = 0) -> habitat_sim.AgentState:
+        if self.config.USE_RENDERED_OBSERVATIONS:
+            return self._sim.get_agent_state()
+        else:
+            return self._sim.get_agent(agent_id).get_state()
+
     def set_agent_state(
         self,
         position: List[float],
@@ -253,10 +250,22 @@ class SoundSpacesSim(Simulator, ABC):
         agent_id: int = 0,
         reset_sensors: bool = True,
     ) -> bool:
-        if not self.config.USE_RENDERED_OBSERVATIONS:
-            super().set_agent_state(position, rotation, agent_id=agent_id, reset_sensors=reset_sensors)
+        if self.config.USE_RENDERED_OBSERVATIONS:
+            self._sim.set_agent_state(position, rotation)
         else:
-            pass
+            agent = self._sim.get_agent(agent_id)
+            new_state = self.get_agent_state(agent_id)
+            new_state.position = position
+            new_state.rotation = rotation
+
+            # NB: The agent state also contains the sensor states in _absolute_
+            # coordinates. In order to set the agent's body to a specific
+            # location and have the sensors follow, we must not provide any
+            # state for the sensors. This will cause them to follow the agent's
+            # body
+            new_state.sensor_states = {}
+            agent.set_state(new_state, reset_sensors)
+            return True
 
     @property
     def binaural_rir_dir(self):
@@ -315,16 +324,16 @@ class SoundSpacesSim(Simulator, ABC):
             self._current_scene = config.SCENE
             logging.debug('Current scene: {} and sound: {}'.format(self.current_scene_name, self._current_sound))
 
-            if not self.config.USE_RENDERED_OBSERVATIONS:
+            if self.config.USE_RENDERED_OBSERVATIONS:
+                with open(self.current_scene_observation_file, 'rb') as fo:
+                    self._frame_cache = pickle.load(fo)
+            else:
                 self._sim.close()
                 del self._sim
                 self.sim_config = self.create_sim_config(self._sensor_suite)
                 self._sim = habitat_sim.Simulator(self.sim_config)
                 self._update_agents_state()
                 self._frame_cache = dict()
-            else:
-                with open(self.current_scene_observation_file, 'rb') as fo:
-                    self._frame_cache = pickle.load(fo)
             logging.debug('Loaded scene {}'.format(self.current_scene_name))
 
             self.points, self.graph = load_metadata(self.metadata_dir)
@@ -345,12 +354,12 @@ class SoundSpacesSim(Simulator, ABC):
         # so rotation angle 90 means the agent rotate about +Y 90 degrees
         self._rotation_angle = int(np.around(np.rad2deg(quat_to_angle_axis(quat_from_coeffs(
                              self.config.AGENT_0.START_ROTATION))[0]))) % 360
-        if not self.config.USE_RENDERED_OBSERVATIONS:
-            self.set_agent_state(list(self.graph.nodes[self._receiver_position_index]['point']),
-                                 self.config.AGENT_0.START_ROTATION)
-        else:
+        if self.config.USE_RENDERED_OBSERVATIONS:
             self._sim.set_agent_state(list(self.graph.nodes[self._receiver_position_index]['point']),
                                       quat_from_coeffs(self.config.AGENT_0.START_ROTATION))
+        else:
+            self.set_agent_state(list(self.graph.nodes[self._receiver_position_index]['point']),
+                                 self.config.AGENT_0.START_ROTATION)
 
         if self.config.AUDIO.HAS_DISTRACTOR_SOUND:
             self._distractor_position_index = self.config.AGENT_0.DISTRACTOR_POSITION_INDEX
@@ -399,13 +408,13 @@ class SoundSpacesSim(Simulator, ABC):
 
     def reset(self):
         logging.debug('Reset simulation')
-        if not self.config.USE_RENDERED_OBSERVATIONS:
+        if self.config.USE_RENDERED_OBSERVATIONS:
+            sim_obs = self._get_sim_observation()
+            self._sim.set_sensor_observations(sim_obs)
+        else:
             sim_obs = self._sim.reset()
             if self._update_agents_state():
                 sim_obs = self._get_sim_observation()
-        else:
-            sim_obs = self._get_sim_observation()
-            self._sim.set_sensor_observations(sim_obs)
 
         self._is_episode_active = True
         self._prev_sim_obs = sim_obs
@@ -481,12 +490,8 @@ class SoundSpacesSim(Simulator, ABC):
                         observations = self._sensor_suite.get_observations(sim_obs)
                         intermediate_observations.append(observations)
 
-            if not self.config.USE_RENDERED_OBSERVATIONS:
-                self.set_agent_state(list(self.graph.nodes[self._receiver_position_index]['point']),
-                                     quat_from_angle_axis(np.deg2rad(self._rotation_angle), np.array([0, 1, 0])))
-            else:
-                self._sim.set_agent_state(list(self.graph.nodes[self._receiver_position_index]['point']),
-                                          quat_from_angle_axis(np.deg2rad(self._rotation_angle), np.array([0, 1, 0])))
+            self.set_agent_state(list(self.graph.nodes[self._receiver_position_index]['point']),
+                                 quat_from_angle_axis(np.deg2rad(self._rotation_angle), np.array([0, 1, 0])))
         self._episode_step_count += 1
 
         # log debugging info
