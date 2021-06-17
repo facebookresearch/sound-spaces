@@ -15,6 +15,7 @@ from habitat.sims.habitat_simulator.actions import HabitatSimActions
 from habitat.utils.visualizations import maps
 from habitat.datasets import make_dataset
 from habitat.utils.visualizations.utils import observations_to_image
+import soundspaces
 from ss_baselines.common.environments import AudioNavRLEnv
 from ss_baselines.common.utils import images_to_video_with_audio
 from ss_baselines.av_nav.config import get_config
@@ -183,8 +184,8 @@ def main():
     parser.add_argument(
         "--exp-config",
         type=str,
-        # required=True,
-        default='baselines/config/audiogoal_rgb_demo.yaml',
+        required=True,
+        default='ss_baselines/av_nav/config/audionav/mp3d/interactive_demo.yaml',
         help="path to config yaml containing info about experiment",
     )
     parser.add_argument(
