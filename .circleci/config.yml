@@ -142,7 +142,7 @@ jobs:
               export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
               . activate soundspaces;
               pip install opencv-contrib-python; sudo apt-get -y install libatlas-base-dev libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev  libqtgui4  libqt4-test
-              conda install habitat-sim headless -c conda-forge -c aihabitat
+              conda install -y habitat-sim headless -c conda-forge -c aihabitat
       - run:
           name: Ccache stats
           when: always
