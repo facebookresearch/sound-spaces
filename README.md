@@ -1,6 +1,6 @@
 ![](res/logo.png)
 --------------------------------------------------------------------------------
-SoundSpaces is a realistic acoustic simulation platform for audio-visual embodied AI research. From audio-visual navigation and echolocation to audio-visual floor plan reconstruction, this platform expands embodied vision research to a broader scope of topics.
+SoundSpaces is a realistic acoustic simulation platform for audio-visual embodied AI research. From audio-visual navigation, audio-visual exploration to echolocation and audio-visual floor plan reconstruction, this platform expands embodied vision research to a broader scope of topics.
 
 <p align="center"><a href="https://youtu.be/4uiptTUyq30">
   <img src="res/soundspaces-demo.gif"  height="400"></a>
