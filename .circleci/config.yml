@@ -138,17 +138,11 @@ jobs:
           name: Build, install habitat-sim and run benchmark
           no_output_timeout: 30m
           command: |
-              if [ ! -d ./habitat-sim ]
-              then
-                git clone https://github.com/facebookresearch/habitat-sim.git --recursive
-              fi
               # while [ ! -f ./cuda_installed ]; do sleep 2; done # wait for CUDA
               export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
               . activate soundspaces;
-              cd habitat-sim
-              pip install -r requirements.txt --progress-bar off
-              pip install pillow
-              python -u setup.py install --headless --with-cuda --bullet
+              pip install opencv-contrib-python; sudo apt-get -y install libatlas-base-dev libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev  libqtgui4  libqt4-test
+              conda install -y habitat-sim headless -c conda-forge -c aihabitat
       - run:
           name: Ccache stats
           when: always
@@ -183,7 +177,7 @@ jobs:
           command: |
               export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
               . activate soundspaces;
-              git clone git@github.com:facebookresearch/habitat-lab.git && cd habitat-lab && git checkout v0.1.6
+              git clone git@github.com:facebookresearch/habitat-lab.git && cd habitat-lab && git checkout v0.1.7
               pip --version
               pip install -e .
       - run:
@@ -214,5 +208,5 @@ workflows:
   version: 2
   install_and_test:
     jobs:
-      - python_lint
+#      - python_lint
       - install_and_test_ubuntu
