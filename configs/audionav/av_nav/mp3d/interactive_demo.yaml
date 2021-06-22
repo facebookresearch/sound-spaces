@@ -18,7 +18,7 @@ SIMULATOR:
   VIEW_CHANGE_FPS: 30
   AUDIO:
     RIR_SAMPLING_RATE: 16000
-    SOURCE_SOUND_DIR: "data/sounds/demo"
+    SOURCE_SOUND_DIR: "data/sounds/1s_all"
 
 TASK:
   TYPE: AudioNav
@@ -39,7 +39,7 @@ TASK:
 
 DATASET:
   TYPE: "AudioNav"
-  SPLIT: "test_demo"
+  SPLIT: "val_telephone"
   CONTENT_SCENES: ["*"]
   VERSION: 'v1'
   SCENES_DIR: "data/scene_datasets/mp3d"

@@ -173,6 +173,8 @@ def following(config, env, keys):
 
 
 def main():
+    # import os
+    # os.environ["SDL_VIDEODRIVER"] = "dummy"
     parser = argparse.ArgumentParser()
     # parser.add_argument('--sound', default=False, action='store_true')
     parser.add_argument(
@@ -184,7 +186,7 @@ def main():
     parser.add_argument(
         "--exp-config",
         type=str,
-        required=True,
+        required=False,
         default='ss_baselines/av_nav/config/audionav/mp3d/interactive_demo.yaml',
         help="path to config yaml containing info about experiment",
     )

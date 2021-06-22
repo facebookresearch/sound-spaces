@@ -15,8 +15,6 @@ setup(
         'ss_baselines'
     ],
     install_requires=[
-        'habitat',
-        'habitat-sim',
         'torch',
         'gym==0.10.9',
         'numpy>=1.16.1',

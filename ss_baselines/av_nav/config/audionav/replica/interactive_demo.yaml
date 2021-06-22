@@ -41,5 +41,5 @@ RL:
     reward_window_size: 50
 
 EVAL:
-  SPLIT: "test_demo"
+  SPLIT: "val_telephone"
   USE_CKPT_CONFIG: True

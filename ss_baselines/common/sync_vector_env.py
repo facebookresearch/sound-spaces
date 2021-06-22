@@ -24,7 +24,7 @@ from typing import (
 
 import gym
 import numpy as np
-from gym.spaces.dict_space import Dict as SpaceDict
+from gym.spaces import Dict as SpaceDict
 
 import habitat
 from habitat.config import Config

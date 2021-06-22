@@ -1,0 +1,218 @@
+version: 2
+gpu: &gpu
+  machine:
+    image: ubuntu-1604-cuda-10.1:201909-23
+  resource_class: gpu.small
+  environment:
+    FPS_THRESHOLD: 900
+
+jobs:
+  python_lint:
+    docker:
+      - image: circleci/python:3.6
+    steps:
+      - checkout
+      - run:
+          name: setup
+          command: |
+              sudo pip install black flake8 flake8-builtins flake8-bugbear flake8-comprehensions flake8-return flake8-simplify "isort[pyproject]" numpy --progress-bar off
+              sudo pip install -e . --progress-bar off
+      - run:
+          name: run black
+          command: |
+              black --exclude '/(\.eggs|\.git|\.hg|\.mypy_cache|\.nox|\.tox|\.venv|_build|buck-out|build|dist)|examples/tutorials/(colabs|nb_python)' soundspaces/. ss_baselines/. scripts/. setup.py --diff
+              black --exclude '/(\.eggs|\.git|\.hg|\.mypy_cache|\.nox|\.tox|\.venv|_build|buck-out|build|dist)|examples/tutorials/(colabs|nb_python)' soundspaces/. ss_baselines/. scripts/. setup.py --check
+      - run:
+          name: run isort
+          command: |
+              isort --version
+              isort soundspaces/. ss_baselines/. scripts/. setup.py --diff
+              isort soundspaces/. ss_baselines/. scripts/. setup.py --check-only
+      - run:
+          name: run flake8
+          command: |
+              flake8 --version
+              flake8 soundspaces/. ss_baselines/. scripts/. setup.py
+  install_and_test_ubuntu:
+    <<: *gpu
+    steps:
+      - checkout:
+          path: ./sound-spaces
+      - run:
+          name: Install cmake
+          no_output_timeout: 5m
+          command: |
+              echo $(git ls-remote https://github.com/facebookresearch/habitat-sim.git HEAD | awk '{ print $1}') > ./hsim_sha
+              wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh
+              sudo mkdir /opt/cmake
+              sudo sh ./cmake-3.13.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
+              sudo ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+      - run:
+          name: Install dependencies
+          no_output_timeout: 20m
+          command: |
+              sudo apt-get update || true
+              sudo apt-get install -y --no-install-recommends \
+                  build-essential \
+                  git \
+                  curl \
+                  vim \
+                  ca-certificates \
+                  libbullet-dev \
+                  libjpeg-dev \
+                  libglm-dev \
+                  libegl1-mesa-dev \
+                  xorg-dev \
+                  freeglut3-dev \
+                  pkg-config \
+                  wget \
+                  zip \
+                  libhdf5-dev \
+                  unzip || true
+              sudo apt install --allow-change-held-packages \
+                  texlive-base \
+                  texlive-latex-extra \
+                  texlive-fonts-extra \
+                  texlive-fonts-recommended
+      - run:
+          name: Check CUDA
+          no_output_timeout: 20m
+          background: true
+          command: |
+              # wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
+              # sudo dpkg -i cuda-repo-ubuntu1604_8.0.44-1_amd64.deb
+              # sudo apt-get update || true
+              # sudo apt-get --yes --force-yes install cuda
+              # touch ./cuda_installed
+              nvidia-smi
+      # Restore Conda cache
+      - restore_cache:
+          keys:
+            - conda-{{ checksum "sound-spaces/.circleci/config.yml" }}
+      - run:
+          name: Install conda and dependencies
+          no_output_timeout: 20m
+          command: |
+              if [ ! -d ~/miniconda ]
+              then
+                curl -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+                chmod +x ~/miniconda.sh
+                ~/miniconda.sh -b -p $HOME/miniconda
+                rm ~/miniconda.sh
+                export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
+                conda create -y -n soundspaces python=3.6
+                . activate soundspaces
+                conda install -q -y -c conda-forge ninja ccache numpy pytest pytest-mock pytest-cov
+                pip install pytest-sugar
+              fi
+      - run:
+          name: Install pytorch
+          no_output_timeout: 20m
+          background: true
+          command: |
+              if [ ! -f ~/miniconda/pytorch_installed ]
+              then
+                export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
+                . activate soundspaces;
+                conda install -c  conda-forge opencv -y
+                conda install pytorch==1.7.1 torchvision==0.8.2 torchaudio==0.7.2 cudatoolkit=10.1 -c pytorch
+              fi
+              touch ~/miniconda/pytorch_installed
+      - restore_cache:
+          keys:
+            - habitat-sim-{{ checksum "./hsim_sha" }}
+      - restore_cache:
+          keys:
+            - ccache-{{ arch }}-master
+          paths:
+            - /home/circleci/.ccache
+      - run:
+          name: CCache initialization
+          command: |
+            export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
+            . activate soundspaces;
+            ccache --show-stats
+            ccache --zero-stats
+            ccache --max-size=10.0G
+      - run:
+          name: Build, install habitat-sim and run benchmark
+          no_output_timeout: 30m
+          command: |
+              if [ ! -d ./habitat-sim ]
+              then
+                git clone https://github.com/facebookresearch/habitat-sim.git --recursive
+              fi
+              # while [ ! -f ./cuda_installed ]; do sleep 2; done # wait for CUDA
+              export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
+              . activate soundspaces;
+              cd habitat-sim
+              pip install -r requirements.txt --progress-bar off
+              pip install pillow
+              python -u setup.py install --headless --with-cuda --bullet
+      - run:
+          name: Ccache stats
+          when: always
+          command: |
+            export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
+            . activate soundspaces;
+            ccache --show-stats
+      - run:
+          name: Download test data
+          command: |
+              cd sound-spaces
+              wget http://dl.fbaipublicfiles.com/SoundSpaces/challenge_21/minival.tar
+              tar -xvf minival.tar
+              rm minival.tar
+              wget http://dl.fbaipublicfiles.com/SoundSpaces/pretrained_weights.tar.xz
+              tar -xvf pretrained_weights.tar.xz
+              mv pretrained_weights data/
+              rm pretrained_weights.tar.xz
+      - save_cache:
+          key: habitat-sim-{{ checksum "./hsim_sha" }}
+          background: true
+          paths:
+            - ./habitat-sim
+      - save_cache:
+          key: ccache-{{ arch }}-master
+          background: true
+          paths:
+            - /home/circleci/.ccache
+      - run:
+          name: Install habitat-lab
+          no_output_timeout: 20m
+          command: |
+              export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
+              . activate soundspaces;
+              git clone git@github.com:facebookresearch/habitat-lab.git && cd habitat-lab && git checkout v0.1.6
+              pip --version
+              pip install -e .
+      - run:
+          name: Install sound-spaces
+          no_output_timeout: 20m
+          command: |
+              export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
+              . activate soundspaces; cd sound-spaces
+              while [ ! -f ~/miniconda/pytorch_installed ]; do sleep 2; done # wait for Pytorch
+              pip install -e .
+      - save_cache:
+          key: conda-{{ checksum "sound-spaces/.circleci/config.yml" }}
+          background: true
+          paths:
+            - ~/miniconda
+      - run:
+          name: Run api tests
+          no_output_timeout: 30m
+          command: |
+              export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
+              . activate soundspaces; cd sound-spaces
+              pip show torch
+              python ss_baselines/av_nav/run.py --run-type eval --exp-config ss_baselines/av_nav/config/audionav/mp3d/test_telephone/audiogoal_depth.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/audionav/av_nav/mp3d/heard.pth  EVAL.SPLIT val_mini
+              python ss_baselines/av_nav/run.py --run-type eval --exp-config ss_baselines/av_nav/config/audionav/mp3d/test_telephone/audiogoal_depth.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/audionav/av_nav/mp3d/heard.pth  EVAL.SPLIT val_mini USE_SYNC_VECENV True
+              python ss_baselines/av_nav/run.py --run-type eval --exp-config ss_baselines/av_nav/config/audionav/mp3d/test_telephone/audiogoal_depth.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/audionav/av_nav/mp3d/heard.pth  EVAL.SPLIT val_mini TASK_CONFIG.SIMULATOR.USE_RENDERED_OBSERVATIONS True
+
+workflows:
+  version: 2
+  install_and_test:
+    jobs:
+      - python_lint
+      - install_and_test_ubuntu
