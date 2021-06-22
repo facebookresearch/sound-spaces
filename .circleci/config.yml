@@ -138,17 +138,10 @@ jobs:
           name: Build, install habitat-sim and run benchmark
           no_output_timeout: 30m
           command: |
-              if [ ! -d ./habitat-sim ]
-              then
-                git clone https://github.com/facebookresearch/habitat-sim.git --recursive
-              fi
               # while [ ! -f ./cuda_installed ]; do sleep 2; done # wait for CUDA
               export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
               . activate soundspaces;
-              cd habitat-sim
-              pip install -r requirements.txt --progress-bar off
-              pip install pillow
-              python -u setup.py install --headless --with-cuda --bullet
+              conda install habitat-sim headless -c conda-forge -c aihabitat
       - run:
           name: Ccache stats
           when: always
