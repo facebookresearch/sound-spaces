@@ -114,7 +114,6 @@ jobs:
               then
                 export PATH=$HOME/miniconda/bin:/usr/local/cuda/bin:$PATH
                 . activate soundspaces;
-                rm /home/circleci/miniconda/pkgs/pytorch-1.7.1-py3.6_cuda10.1.243_cudnn7.6.3_0.tar.bz2
                 conda install -c  conda-forge opencv -y
                 conda install pytorch==1.7.1 torchvision==0.8.2 torchaudio==0.7.2 cudatoolkit=10.1 -c pytorch
               fi
