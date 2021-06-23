@@ -16,7 +16,7 @@ setup(
     ],
     install_requires=[
         'torch',
-        'gym==0.10.9',
+        'gym',
         'numpy>=1.16.1',
         'yacs>=0.1.5',
         'numpy-quaternion>=2019.3.18.14.33.20',
