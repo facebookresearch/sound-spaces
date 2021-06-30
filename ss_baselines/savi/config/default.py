@@ -28,7 +28,7 @@ _C.SEED = 0
 _C.BASE_TASK_CONFIG_PATH = "configs/tasks/pointgoal.yaml"
 _C.TASK_CONFIG = CN()  # task_config will be stored as a config node
 _C.CMD_TRAILING_OPTS = []  # store command line options as list of strings
-_C.TRAINER_NAME = "av-snav"
+_C.TRAINER_NAME = "savi"
 _C.ENV_NAME = "AudioNavRLEnv"
 _C.SIMULATOR_GPU_ID = 0
 _C.TORCH_GPU_ID = 0
@@ -132,8 +132,6 @@ _C.RL.DDPPO.pretrained_weights = ""
 _C.RL.DDPPO.pretrained = False
 # Whether or not to reset the critic linear layer
 _C.RL.DDPPO.reset_critic = True
-_C.RL.DDPPO.load_encoders_only = False
-_C.RL.DDPPO.load_encoders_without_segmentation = False
 # -----------------------------------------------------------------------------
 # TASK CONFIG
 # -----------------------------------------------------------------------------

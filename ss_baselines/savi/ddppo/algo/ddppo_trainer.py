@@ -22,7 +22,7 @@ from habitat import Config, logger
 from ss_baselines.common.baseline_registry import baseline_registry
 from ss_baselines.common.env_utils import construct_envs
 from ss_baselines.common.environments import get_env_class
-from ss_baselines.common.rollout_storage import RolloutStorage
+from ss_baselines.savi.models.rollout_storage import RolloutStorage
 from ss_baselines.common.tensorboard_utils import TensorboardWriter
 from ss_baselines.common.utils import batch_obs, linear_decay
 from ss_baselines.savi.ddppo.algo.ddp_utils import (
@@ -145,47 +145,29 @@ class DDPPOTrainer(PPOTrainer):
         if self.config.RL.DDPPO.pretrained:
             # load weights for both actor critic and the encoder
             pretrained_state = torch.load(self.config.RL.DDPPO.pretrained_weights, map_location="cpu")
-            if self.config.RL.DDPPO.load_encoders_only:
-                self.actor_critic.load_state_dict(
-                    {
-                        k[len("actor_critic."):]: v
-                        for k, v in pretrained_state["state_dict"].items()
-                        if "actor_critic.net.smt_state_encoder" not in k
-                    },
-                    strict=False
-                )
-            elif self.config.RL.DDPPO.load_encoders_without_segmentation:
-                self.actor_critic.load_state_dict(
-                    {
-                        k[len("actor_critic."):]: v
-                        for k, v in pretrained_state["state_dict"].items()
-                        if "actor_critic.net.visual_encoder" not in k and
-                           "actor_critic.net.smt_state_encoder" not in k
-                    },
-                    strict=False
-                )
-                self.actor_critic.net.visual_encoder.rgb_encoder.load_state_dict(
-                    {
-                        k[len("actor_critic.net.visual_encoder.rgb_encoder."):]: v
-                        for k, v in pretrained_state["state_dict"].items()
-                        if "actor_critic.net.visual_encoder.rgb_encoder." in k
-                    },
-                )
-                self.actor_critic.net.visual_encoder.depth_encoder.load_state_dict(
-                    {
-                        k[len("actor_critic.net.visual_encoder.depth_encoder."):]: v
-                        for k, v in pretrained_state["state_dict"].items()
-                        if "actor_critic.net.visual_encoder.depth_encoder." in k
-                    },
-                )
-            else:
-                self.actor_critic.load_state_dict(
-                    {
-                        k[len("actor_critic."):]: v
-                        for k, v in pretrained_state["state_dict"].items()
-                    },
-                    strict=False
-                )
+            self.actor_critic.load_state_dict(
+                {
+                    k[len("actor_critic."):]: v
+                    for k, v in pretrained_state["state_dict"].items()
+                    if "actor_critic.net.visual_encoder" not in k and
+                       "actor_critic.net.smt_state_encoder" not in k
+                },
+                strict=False
+            )
+            self.actor_critic.net.visual_encoder.rgb_encoder.load_state_dict(
+                {
+                    k[len("actor_critic.net.visual_encoder.rgb_encoder."):]: v
+                    for k, v in pretrained_state["state_dict"].items()
+                    if "actor_critic.net.visual_encoder.rgb_encoder." in k
+                },
+            )
+            self.actor_critic.net.visual_encoder.depth_encoder.load_state_dict(
+                {
+                    k[len("actor_critic.net.visual_encoder.depth_encoder."):]: v
+                    for k, v in pretrained_state["state_dict"].items()
+                    if "actor_critic.net.visual_encoder.depth_encoder." in k
+                },
+            )
 
         if self.config.RL.DDPPO.reset_critic:
             nn.init.orthogonal_(self.actor_critic.critic.fc.weight)

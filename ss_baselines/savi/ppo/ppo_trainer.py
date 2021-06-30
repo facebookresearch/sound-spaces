@@ -60,7 +60,7 @@ class DataParallelPassthrough(torch.nn.DataParallel):
             return getattr(self.module, name)
 
 
-@baseline_registry.register_trainer(name="av-snav")
+@baseline_registry.register_trainer(name="savi")
 class PPOTrainer(BaseRLTrainer):
     r"""Trainer class for PPO algorithm
     Paper: https://arxiv.org/abs/1707.06347.

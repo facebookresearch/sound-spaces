@@ -1,4 +1,4 @@
-BASE_TASK_CONFIG_PATH: "configs/semantic_audionav/av_snav/mp3d/semantic_audiogoal_no_segmentation.yaml"
+BASE_TASK_CONFIG_PATH: "configs/semantic_audionav/savi/mp3d/semantic_audiogoal.yaml"
 TRAINER_NAME: "ddppo"
 NUM_PROCESSES: 8
 SENSORS: ["DEPTH_SENSOR", "RGB_SENSOR"]
@@ -54,7 +54,6 @@ RL:
     rnn_type: "GRU"
     num_recurrent_layers: 1
     backbone: "custom_resnet18"
-    pretrained_weights: "/checkpoint/changanvr/semantic-avnav-data/models/av_snav_semantic/data/ckpt.50.pth"
+    pretrained_weights: "data/models/savi/data/ckpt.50.pth"
     pretrained: True
     reset_critic: False
-    load_encoders_without_segmentation: True
