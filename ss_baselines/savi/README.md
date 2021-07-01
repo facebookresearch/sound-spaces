@@ -19,7 +19,7 @@ python ss_baselines/savi/pretraining/audiogoal_trainer.py --run-type train --mod
 Submit the slurm.sh to your slurm cluster for training. 
 If cluster is not available, use the following training command to train with PPO.
 SAVi is first trained with external memory size 1, which only uses the last observation.
-It is then fine-tuned with the whole external memory.
+It is then fine-tuned with the whole external memory. Please update the pretrained_weights path in savi.yaml with the best pretrained checkpoint when finetuning.
 ```
 python ss_baselines/savi/run.py --exp-config ss_baselines/savi/config/semantic_audionav/savi_pretraining.yaml --model-dir data/models/savi
 python ss_baselines/savi/run.py --exp-config ss_baselines/savi/config/semantic_audionav/savi.yaml --model-dir data/models/savi
