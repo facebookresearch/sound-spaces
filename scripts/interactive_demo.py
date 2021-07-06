@@ -109,7 +109,6 @@ def interactive_demo(config, env):
         # sr = config.TASK_CONFIG.SIMULATOR.AUDIO.RIR_SAMPLING_RATE
         # audio = np.int16(audio * 32767).T
         # wavfile.write(temp_file, sr, audio)
-        # wavfile.write(temp_file, sr, audio.T)
         # pygame.mixer.music.load(temp_file)
         # pygame.mixer.music.play(-1)
 
