@@ -387,7 +387,7 @@ class SoundSpacesSim(Simulator, ABC):
             reader = self._house_readers[self._current_sound]
             instance_id_to_label_id = reader.compute_object_to_category_index_mapping()
         else:
-            scene = self.semantic_annotations()
+            scene = self._sim.semantic_scene
             instance_id_to_label_id = {int(obj.id.split("_")[-1]): obj.category.index() for obj in scene.objects}
         self._instance2label_mapping = np.array([instance_id_to_label_id[i] for i in range(len(instance_id_to_label_id))])
 
@@ -530,10 +530,6 @@ class SoundSpacesSim(Simulator, ABC):
     @property
     def reaching_goal(self):
         return self._source_position_index == self._receiver_position_index
-
-    def _update_observations_with_audio(self, observations):
-        audio = self.get_current_audio_observation()
-        observations.update({"audio": audio})
 
     def _load_source_sounds(self):
         # load all mono files at once

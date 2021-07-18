@@ -115,7 +115,7 @@ class AudioGoalPredictorTrainer:
                         regressor_loss = regressor_criterion(predicts[:, -2:], gts[:, -2:])
                     elif self.predict_label:
                         classifier_loss = classifier_criterion(predicts, gts[:, 0].long())
-                        regressor_loss = regressor_criterion(predicts[:, -2:], gts[:, -2:])
+                        regressor_loss = torch.tensor([0], device=self.device)
                     elif self.predict_location:
                         regressor_loss = regressor_criterion(predicts, gts[:, -2:])
                         classifier_loss = torch.tensor([0], device=self.device)
