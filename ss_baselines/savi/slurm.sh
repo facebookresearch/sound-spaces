@@ -1,16 +1,16 @@
 #!/bin/bash
 #SBATCH --job-name=savi
-#SBATCH --output=~/sound-spaces/data/logs/%j.out
-#SBATCH --error=~/sound-spaces/data/logs/%j.err
+#SBATCH --output=data/logs/%j.out
+#SBATCH --error=data/logs/%j.err
 #SBATCH --gres gpu:2
 #SBATCH --nodes 16
-#SBATCH --cpus-per-task 20
+#SBATCH --cpus-per-task 10
 #SBATCH --ntasks-per-node 2
 #SBATCH --mem=60GB
 #SBATCH --time=1440:00
 #SBATCH --constraint=volta32gb
 #SBATCH --signal=USR1@600
-#SBATCH --partition=learnfair
+#SBATCH --partition=devlab
 
 export GLOG_minloglevel=2
 export MAGNUM_LOG=quiet

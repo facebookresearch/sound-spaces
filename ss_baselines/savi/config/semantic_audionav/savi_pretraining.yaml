@@ -34,7 +34,7 @@ RL:
     reward_window_size: 50
     use_normalized_advantage: False
     policy_type: "smt"
-    use_belief_predictor: False
+    use_belief_predictor: True
     use_external_memory: True
     SCENE_MEMORY_TRANSFORMER:
       memory_size: 150
@@ -46,14 +46,20 @@ RL:
       activation: 'relu'
       use_pretrained: False
       pretrained_path: ''
-      freeze_encoders: True
-      pretraining: False
+      freeze_encoders: False
+      pretraining: True
+    BELIEF_PREDICTOR:
+      online_training: True
+      train_encoder: False
+      lr: 1e-3
+      use_label_belief: True
+      use_location_belief: True
   DDPPO:
     sync_frac: 0.6
     distrib_backend: "GLOO"
     rnn_type: "GRU"
     num_recurrent_layers: 1
     backbone: "custom_resnet18"
-    pretrained_weights: "data/models/savi/data/ckpt.50.pth"
+    pretrained_weights: ""
     pretrained: False
     reset_critic: False

@@ -11,22 +11,21 @@ seed the random seeds a bit differently. The difference of performance should be
 Pretrained weights are provided.
 
 ## Usage
-1. Pretrain the label predictor:
+1. Pretrain the label predictor (or use the pretrained model weights from this repo):
 ```
 python ss_baselines/savi/pretraining/audiogoal_trainer.py --run-type train --model-dir data/models/savi --predict-label
 ```
-2. Train the SAVi model with the pretrained label predictor (location predictor is better trained online) with DDPPO.
-Submit the slurm.sh to your slurm cluster for training. 
-If cluster is not available, use the following training command to train with PPO.
-SAVi is first trained with external memory size 1, which only uses the last observation.
-It is then fine-tuned with the whole external memory. Please update the pretrained_weights path in savi.yaml with the best pretrained checkpoint when finetuning.
+2. Train the SAVi model with the trained label predictor (location predictor is better trained online) with DDPPO.
+Submit slurm.sh to your slurm cluster for training. If clusters are not available, use the following training command to train with PPO.   
+SAVi is first trained with the external memory size of 1, which only uses the last observation.
+It is then fine-tuned with the whole external memory with encoders freezed. Please update the pretrained_weights path in savi.yaml with the best pretrained checkpoint when finetuning.
 ```
 python ss_baselines/savi/run.py --exp-config ss_baselines/savi/config/semantic_audionav/savi_pretraining.yaml --model-dir data/models/savi
 python ss_baselines/savi/run.py --exp-config ss_baselines/savi/config/semantic_audionav/savi.yaml --model-dir data/models/savi
 ```
 3. Evaluating pretrained model
 ```
-py ss_baselines/savi/run.py --run-type eval --exp-config ss_baselines/savi/config/semantic_audionav/savi.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/semantic_audionav/savi/best_val.pth EVAL.SPLIT test USE_SYNC_VECENV True
+py ss_baselines/savi/run.py --run-type eval --exp-config ss_baselines/savi/config/semantic_audionav/savi.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/semantic_audionav/savi/best_val.pth EVAL.SPLIT test USE_SYNC_VECENV True RL.DDPPO.pretrained False
 ```
 
 ## Citation
