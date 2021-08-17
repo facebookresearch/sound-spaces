@@ -37,7 +37,7 @@ RL:
     use_belief_predictor: True
     use_external_memory: True
     SCENE_MEMORY_TRANSFORMER:
-      memory_size: 150
+      memory_size: 1
       hidden_size: 256
       nhead: 8
       num_encoder_layers: 1
