@@ -29,7 +29,7 @@ setup(
         'numba',
         'Pillow',
         'pydub',
-        'getch',
+        # 'getch',
         'matplotlib',
         'librosa',
         'torchsummary',
