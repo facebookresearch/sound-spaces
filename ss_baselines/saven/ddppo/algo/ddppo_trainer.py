@@ -118,6 +118,7 @@ class DDPPOTrainer(PPOTrainer):
                 normalize_category_distribution=belief_cfg.normalize_category_distribution,
                 use_category_input=has_distractor_sound
             )
+            logger.info("self.actor_critic: {}".format(self.actor_critic))
             if smt_cfg.freeze_encoders:
                 self._static_smt_encoder = True
                 self.actor_critic.net.freeze_encoders()
@@ -128,6 +129,7 @@ class DDPPOTrainer(PPOTrainer):
                 self.belief_predictor = bp_class(belief_cfg, self.device, smt._input_size, smt._pose_indices,
                                                  smt.hidden_state_size, self.envs.num_envs, has_distractor_sound
                                                  ).to(device=self.device)
+                logger.info("self.belief_predictor: {}".format(self.belief_predictor))
                 if belief_cfg.online_training:
                     params = list(self.belief_predictor.predictor.parameters())
                     if belief_cfg.train_encoder:
@@ -136,7 +138,6 @@ class DDPPOTrainer(PPOTrainer):
                                   list(self.actor_critic.net.action_encoder.parameters())
                     self.belief_predictor.optimizer = torch.optim.Adam(params, lr=belief_cfg.lr)
                 self.belief_predictor.freeze_encoders()
-
         else:
             raise ValueError(f'Policy type {ppo_cfg.policy_type} is not defined!')
 

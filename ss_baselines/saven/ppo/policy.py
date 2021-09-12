@@ -20,7 +20,8 @@ from ss_baselines.av_nav.models.rnn_state_encoder import RNNStateEncoder
 from ss_baselines.saven.models.visual_cnn import VisualCNN
 from ss_baselines.saven.models.audio_cnn import AudioCNN
 from ss_baselines.saven.models.smt_state_encoder import SMTStateEncoder
-from ss_baselines.saven.models.smt_cnn import SMTCNN
+from ss_baselines.saven.models.smt_cnn import SMTCNN, SMTCNN_saven
+from ss_baselines.saven.models.gcn import GCN
 
 DUAL_GOAL_DELIMITER = ','
 
@@ -316,10 +317,13 @@ class AudioNavSMTNet(Net):
         self._use_category_input = use_category_input
 
         assert SpectrogramSensor.cls_uuid in observation_space.spaces
-        self.goal_encoder = AudioCNN(observation_space, 128, SpectrogramSensor.cls_uuid)
-        audio_feature_dims = 128
+        # self.goal_encoder = AudioCNN(observation_space, 128, SpectrogramSensor.cls_uuid)
+        # audio_feature_dims = 128
+        audio_feature_dims = 0
+        self.audio_gcn = GCN()
 
-        self.visual_encoder = SMTCNN(observation_space)
+        # self.visual_encoder = SMTCNN(observation_space)
+        self.visual_encoder = SMTCNN_saven(observation_space)
         if self._use_action_encoding:
             self.action_encoder = nn.Linear(self._action_size, 16)
             action_encoding_dims = 16
@@ -386,16 +390,26 @@ class AudioNavSMTNet(Net):
                 if self._normalize_category_distribution:
                     belief[:, :21] = nn.functional.softmax(observations[CategoryBelief.cls_uuid], dim=1)
                 else:
-                    belief[:, :21] = observations[CategoryBelief.cls_uuid]
+                    # belief[:, :21] = observations[CategoryBelief.cls_uuid]
+                    # belief[:, :45] = observations[CategoryBelief.cls_uuid]
+
+                    obs_cat_belief = observations[CategoryBelief.cls_uuid]
+                    audio_gcn_embds = torch.zeros((obs_cat_belief.shape[0], 256-2), device=x.device)
+                    for i in range(len(obs_cat_belief)):
+                        audio_gcn_embds[i, :] = self.audio_gcn(obs_cat_belief[i])
+                    belief[:, :256-2] = audio_gcn_embds
 
             if self._use_location_belief:
-                belief[:, 21:23] = observations[LocationBelief.cls_uuid]
+                # belief[:, 21:23] = observations[LocationBelief.cls_uuid]
+                # print("observations[LocationBelief.cls_uuid]: ", observations[LocationBelief.cls_uuid])
+                belief[:, 256-2:256-2+2] = observations[LocationBelief.cls_uuid]
 
             if self._use_belief_encoder:
                 belief = self.belief_encoder(belief)
         else:
             belief = None
 
+        # print("belief: ", belief.shape)
         x_att = self.smt_state_encoder(x, ext_memory, ext_memory_masks, goal=belief)
         if self._use_residual_connection:
             x_att = torch.cat([x_att, x], 1)
@@ -440,7 +454,7 @@ class AudioNavSMTNet(Net):
         x = []
         x.append(self.visual_encoder(observations))
         x.append(self.action_encoder(self._get_one_hot(prev_actions)))
-        x.append(self.goal_encoder(observations))
+        # x.append(self.goal_encoder(observations))
         if self._use_category_input:
             x.append(observations[Category.cls_uuid])
 

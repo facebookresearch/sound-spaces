@@ -7,11 +7,15 @@
 # LICENSE file in the root directory of this source tree.
 
 import logging
+import pickle
 
 import torch
 import torch.nn as nn
 import numpy as np
 import torchvision.models as models
+
+from habitat import logger
+
 from soundspaces.tasks.nav import SpectrogramSensor, LocationBelief, CategoryBelief, Category
 from ss_baselines.saven.models.smt_resnet import custom_resnet18
 
@@ -62,22 +66,55 @@ class BeliefPredictor(nn.Module):
         self.predict_location = belief_config.use_location_belief
         self.has_distractor_sound = has_distractor_sound
 
+        mp3d_objects_of_interest_filepath = r"data/metadata/mp3d_objects_of_interest_data.bin"
+        with open(mp3d_objects_of_interest_filepath, 'rb') as bin_file:
+            self.ooi_objects_id_name = pickle.load(bin_file)
+            self.ooi_regions_id_name = pickle.load(bin_file)
+        self.num_objects = len(self.ooi_objects_id_name)
+        self.num_regions = len(self.ooi_regions_id_name)
+
         if self.predict_location:
             if belief_config.online_training:
                 if self.has_distractor_sound:
                     self.predictor = custom_resnet18(num_input_channels=23)
+                    self.predictor.fc = nn.Linear(4608, 2)
                 else:
-                    self.predictor = custom_resnet18(num_input_channels=2)
-                self.predictor.fc = nn.Linear(4608, 2)
+                    # self.predictor = custom_resnet18(num_input_channels=2)
+
+                    logger.info("Loading pre-trained audio network for sound location predictor")
+                    self.predictor = models.resnet18(pretrained=True)
+                    self.predictor.conv1 = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)
+                    output_size = self.num_objects + self.num_regions
+                    num_ftrs = self.predictor.fc.in_features
+                    self.predictor.fc = nn.Linear(num_ftrs, output_size)
+
+                    state_dict = torch.load('data/models/saven_gt/audio/best_test.pth', map_location="cpu")
+                    cleaned_state_dict = {k[len('module.predictor.'):]: v for k, v in
+                                          state_dict['audio_predictor'].items() if 'module.predictor.' in k}
+                    self.predictor.load_state_dict(cleaned_state_dict)
+                    self.predictor.fc = nn.Linear(num_ftrs, 2)
+                # self.predictor.fc = nn.Linear(4608, 2)
             else:
                 self.predictor = models.resnet18(pretrained=True)
                 self.predictor.conv1 = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)
                 self.predictor.fc = nn.Linear(512, 23)
 
         if self.predict_label:
+            # self.classifier = models.resnet18(pretrained=True)
+            # self.classifier.conv1 = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)
+            # self.classifier.fc = nn.Linear(512, 21)
+
+            logger.info("Loading pre-trained audio network for object and region predictor")
             self.classifier = models.resnet18(pretrained=True)
             self.classifier.conv1 = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)
-            self.classifier.fc = nn.Linear(512, 21)
+            output_size = self.num_objects + self.num_regions
+            num_ftrs = self.classifier.fc.in_features
+            self.classifier.fc = nn.Linear(num_ftrs, output_size)
+
+            state_dict = torch.load('data/models/saven_gt/audio/best_test.pth', map_location="cpu")
+            cleaned_state_dict = {k[len('module.predictor.'):]: v for k, v in
+                                  state_dict['audio_predictor'].items() if 'module.predictor.' in k}
+            self.classifier.load_state_dict(cleaned_state_dict)
 
         self.last_pointgoal = [None] * num_env
         self.last_label = [None] * num_env
@@ -86,7 +123,7 @@ class BeliefPredictor(nn.Module):
             self.regressor_criterion = nn.MSELoss().to(device=self.device)
             self.optimizer = None
 
-        self.load_pretrained_weights()
+        # self.load_pretrained_weights()
 
     def load_pretrained_weights(self):
         if self.predict_location:
@@ -176,7 +213,8 @@ class BeliefPredictor(nn.Module):
 
         if self.predict_label:
             with torch.no_grad():
-                labels = self.classifier(spectrograms)[:, :21].cpu().numpy()
+                # labels = self.classifier(spectrograms)[:, :21].cpu().numpy()
+                labels = self.classifier(spectrograms)[:, :self.num_objects + self.num_regions].cpu().numpy()
 
             for i in range(batch_size):
                 label = labels[i]
@@ -196,7 +234,8 @@ class BeliefPredictor(nn.Module):
                 else:
                     if self.last_label[i] is None:
                         logging.debug("Empty RIR after done")
-                        label_avg = np.ones(21) / 21
+                        # label_avg = np.ones(21) / 21
+                        label_avg = np.ones(self.num_objects + self.num_regions) / self.num_objects + self.num_regions
                     else:
                         label_avg = self.last_label[i]
                 observations[CategoryBelief.cls_uuid][i].copy_(torch.from_numpy(label_avg))

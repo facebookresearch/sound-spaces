@@ -164,9 +164,7 @@ def init_distrib_slurm(
         world_rank = 0
         world_size = 1
 
-    tcp_store = distrib.TCPStore(
-        master_addr, master_port, world_size, world_rank == 0
-    )
+    tcp_store = distrib.TCPStore(master_addr, master_port, world_size, world_rank == 0)
     distrib.init_process_group(
         backend, store=tcp_store, rank=world_rank, world_size=world_size
     )

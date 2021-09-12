@@ -3,7 +3,7 @@
 
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
-
+import pickle
 from typing import Any, Type, Union
 import logging
 
@@ -465,17 +465,27 @@ class CategoryBelief(Sensor):
         return SensorTypes.COLOR
 
     def _get_observation_space(self, *args: Any, **kwargs: Any):
+
+        mp3d_objects_of_interest_filepath = r"data/metadata/mp3d_objects_of_interest_data.bin"
+        with open(mp3d_objects_of_interest_filepath, 'rb') as bin_file:
+            self.ooi_objects_id_name = pickle.load(bin_file)
+            self.ooi_regions_id_name = pickle.load(bin_file)
+        self.num_objects = len(self.ooi_objects_id_name)
+        self.num_regions = len(self.ooi_regions_id_name)
+
         return spaces.Box(
             low=0,
             high=1,
-            shape=(len(CATEGORY_INDEX_MAPPING.keys()),),
+            # shape=(len(CATEGORY_INDEX_MAPPING.keys()),),
+            shape=(self.num_objects + self.num_regions,),
             dtype=bool
         )
 
     def get_observation(
         self, *args: Any, observations, episode: Episode, **kwargs: Any
     ) -> object:
-        belief = np.zeros(len(CATEGORY_INDEX_MAPPING.keys()))
+        # belief = np.zeros(len(CATEGORY_INDEX_MAPPING.keys()))
+        belief = np.zeros(self.num_objects + self.num_regions)
 
         return belief
 

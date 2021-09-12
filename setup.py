@@ -29,7 +29,7 @@ setup(
         'numba',
         'Pillow',
         'pydub',
-        # 'getch',
+        'getch',
         'matplotlib',
         'librosa',
         'torchsummary',
@@ -40,7 +40,8 @@ setup(
         'moviepy',
         'tensorflow',
         'astropy',
-        'scikit-image'
+        'scikit-image',
+        'pandas'
     ],
     extras_require={
         'test': [
