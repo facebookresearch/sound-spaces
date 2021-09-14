@@ -284,3 +284,42 @@ class SMTCNN_saven(nn.Module):
     @property
     def is_blind(self):
         return False
+
+
+class VisionPredictor(nn.Module):
+    def __init__(self):
+        super(VisionPredictor, self).__init__()
+        self.predictor = models.resnet18(pretrained=True)
+
+        mp3d_objects_of_interest_filepath = r"data/metadata/mp3d_objects_of_interest_data.bin"
+        with open(mp3d_objects_of_interest_filepath, 'rb') as bin_file:
+            self.ooi_objects_id_name = pickle.load(bin_file)
+            self.ooi_regions_id_name = pickle.load(bin_file)
+        self.num_objects = len(self.ooi_objects_id_name)
+        self.num_regions = len(self.ooi_regions_id_name)
+
+        output_size = self.num_objects + self.num_regions
+        num_ftrs = self.predictor.fc.in_features
+        self.predictor.fc = nn.Linear(num_ftrs, output_size)  # modifying 1000 classes
+        self.sigmoid = nn.Sigmoid()  # torch.sigmoid
+
+        logger.info("Loading pre-trained vision network for visual GCN")
+        state_dict = torch.load('data/models/saven_gt/vision/best_test.pth', map_location="cpu")
+        cleaned_state_dict = {k[len('module.predictor.'):]: v for k, v in state_dict['vision_predictor'].items()
+                              if 'module.predictor.' in k}
+        self.predictor.load_state_dict(cleaned_state_dict)
+
+        for param in self.parameters():
+            param.requires_grad = False
+
+    def forward(self, observations):
+
+        rgb_observations = observations["rgb"]
+        # permute tensor to dimension [BATCH x CHANNEL x HEIGHT X WIDTH]
+        rgb_observations = rgb_observations.permute(0, 3, 1, 2)
+        rgb_observations = rgb_observations / 255.0  # normalize RGB
+
+        x = self.predictor(rgb_observations)
+        x = self.sigmoid(x)
+
+        return x

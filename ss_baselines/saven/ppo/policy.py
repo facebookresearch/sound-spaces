@@ -20,7 +20,7 @@ from ss_baselines.av_nav.models.rnn_state_encoder import RNNStateEncoder
 from ss_baselines.saven.models.visual_cnn import VisualCNN
 from ss_baselines.saven.models.audio_cnn import AudioCNN
 from ss_baselines.saven.models.smt_state_encoder import SMTStateEncoder
-from ss_baselines.saven.models.smt_cnn import SMTCNN, SMTCNN_saven
+from ss_baselines.saven.models.smt_cnn import SMTCNN, SMTCNN_saven, VisionPredictor
 from ss_baselines.saven.models.gcn import GCN
 
 DUAL_GOAL_DELIMITER = ','
@@ -321,6 +321,9 @@ class AudioNavSMTNet(Net):
         # audio_feature_dims = 128
         audio_feature_dims = 0
         self.audio_gcn = GCN()
+        self.visual_gcn = GCN()
+        visual_gcn_dims = 256-2
+        self.vision_predictor = VisionPredictor()
 
         # self.visual_encoder = SMTCNN(observation_space)
         self.visual_encoder = SMTCNN_saven(observation_space)
@@ -329,7 +332,7 @@ class AudioNavSMTNet(Net):
             action_encoding_dims = 16
         else:
             action_encoding_dims = 0
-        nfeats = self.visual_encoder.feature_dims + action_encoding_dims + audio_feature_dims
+        nfeats = self.visual_encoder.feature_dims + action_encoding_dims + audio_feature_dims + visual_gcn_dims
 
         if self._use_category_input:
             nfeats += 21
@@ -401,7 +404,6 @@ class AudioNavSMTNet(Net):
 
             if self._use_location_belief:
                 # belief[:, 21:23] = observations[LocationBelief.cls_uuid]
-                # print("observations[LocationBelief.cls_uuid]: ", observations[LocationBelief.cls_uuid])
                 belief[:, 256-2:256-2+2] = observations[LocationBelief.cls_uuid]
 
             if self._use_belief_encoder:
@@ -409,7 +411,6 @@ class AudioNavSMTNet(Net):
         else:
             belief = None
 
-        # print("belief: ", belief.shape)
         x_att = self.smt_state_encoder(x, ext_memory, ext_memory_masks, goal=belief)
         if self._use_residual_connection:
             x_att = torch.cat([x_att, x], 1)
@@ -455,6 +456,13 @@ class AudioNavSMTNet(Net):
         x.append(self.visual_encoder(observations))
         x.append(self.action_encoder(self._get_one_hot(prev_actions)))
         # x.append(self.goal_encoder(observations))
+
+        obs_cat_predicts = self.vision_predictor(observations)
+        visual_gcn_embds = torch.zeros((obs_cat_predicts.shape[0], 256 - 2), device=prev_actions.device)
+        for i in range(len(obs_cat_predicts)):
+            visual_gcn_embds[i, :] = self.visual_gcn(obs_cat_predicts[i])
+        x.append(visual_gcn_embds)
+
         if self._use_category_input:
             x.append(observations[Category.cls_uuid])
 

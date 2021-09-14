@@ -105,6 +105,7 @@ import dgl
 from dgl.nn import GraphConv
 import scipy.sparse as spp
 
+
 class DGL_GCN(GCN):
     def __init__(self, in_feats, o_feats):
         super(DGL_GCN, self).__init__()
