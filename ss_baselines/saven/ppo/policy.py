@@ -316,23 +316,23 @@ class AudioNavSMTNet(Net):
         self._normalize_category_distribution = normalize_category_distribution
         self._use_category_input = use_category_input
 
-        assert SpectrogramSensor.cls_uuid in observation_space.spaces
+        # assert SpectrogramSensor.cls_uuid in observation_space.spaces
         # self.goal_encoder = AudioCNN(observation_space, 128, SpectrogramSensor.cls_uuid)
         # audio_feature_dims = 128
-        audio_feature_dims = 0
-        self.audio_gcn = GCN()
-        self.visual_gcn = GCN()
-        visual_gcn_dims = 256-2
-        self.vision_predictor = VisionPredictor()
 
         # self.visual_encoder = SMTCNN(observation_space)
         self.visual_encoder = SMTCNN_saven(observation_space)
+
+        self.audio_gcn = GCN()
+        self.visual_gcn = GCN()
+        self.vision_predictor = VisionPredictor()
+
         if self._use_action_encoding:
             self.action_encoder = nn.Linear(self._action_size, 16)
             action_encoding_dims = 16
         else:
             action_encoding_dims = 0
-        nfeats = self.visual_encoder.feature_dims + action_encoding_dims + audio_feature_dims + visual_gcn_dims
+        nfeats = self.visual_encoder.feature_dims + self.visual_gcn.feature_dims + action_encoding_dims
 
         if self._use_category_input:
             nfeats += 21
@@ -394,17 +394,16 @@ class AudioNavSMTNet(Net):
                     belief[:, :21] = nn.functional.softmax(observations[CategoryBelief.cls_uuid], dim=1)
                 else:
                     # belief[:, :21] = observations[CategoryBelief.cls_uuid]
-                    # belief[:, :45] = observations[CategoryBelief.cls_uuid]
 
                     obs_cat_belief = observations[CategoryBelief.cls_uuid]
-                    audio_gcn_embds = torch.zeros((obs_cat_belief.shape[0], 256-2), device=x.device)
+                    audio_gcn_embds = torch.zeros((obs_cat_belief.shape[0], self.audio_gcn.feature_dims), device=x.device)
                     for i in range(len(obs_cat_belief)):
                         audio_gcn_embds[i, :] = self.audio_gcn(obs_cat_belief[i])
-                    belief[:, :256-2] = audio_gcn_embds
+                    belief[:, :self.audio_gcn.feature_dims] = audio_gcn_embds
 
             if self._use_location_belief:
                 # belief[:, 21:23] = observations[LocationBelief.cls_uuid]
-                belief[:, 256-2:256-2+2] = observations[LocationBelief.cls_uuid]
+                belief[:, self.audio_gcn.feature_dims:self.audio_gcn.feature_dims+2] = observations[LocationBelief.cls_uuid]
 
             if self._use_belief_encoder:
                 belief = self.belief_encoder(belief)
@@ -458,7 +457,7 @@ class AudioNavSMTNet(Net):
         # x.append(self.goal_encoder(observations))
 
         obs_cat_predicts = self.vision_predictor(observations)
-        visual_gcn_embds = torch.zeros((obs_cat_predicts.shape[0], 256 - 2), device=prev_actions.device)
+        visual_gcn_embds = torch.zeros((obs_cat_predicts.shape[0], self.visual_gcn.feature_dims), device=prev_actions.device)
         for i in range(len(obs_cat_predicts)):
             visual_gcn_embds[i, :] = self.visual_gcn(obs_cat_predicts[i])
         x.append(visual_gcn_embds)

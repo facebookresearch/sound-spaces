@@ -419,7 +419,7 @@ class DDPPOTrainer(PPOTrainer):
                 self.agent.train()
                 if self.config.RL.PPO.use_belief_predictor:
                     self.belief_predictor.train()
-                    self.belief_predictor.set_eval_encoders()
+                    # self.belief_predictor.set_eval_encoders()
                 if self._static_smt_encoder:
                     self.actor_critic.net.set_eval_encoders()
 

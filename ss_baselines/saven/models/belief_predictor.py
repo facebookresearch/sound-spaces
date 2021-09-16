@@ -79,42 +79,22 @@ class BeliefPredictor(nn.Module):
                     self.predictor = custom_resnet18(num_input_channels=23)
                     self.predictor.fc = nn.Linear(4608, 2)
                 else:
-                    # self.predictor = custom_resnet18(num_input_channels=2)
-
-                    logger.info("Loading pre-trained audio network for sound location predictor")
                     self.predictor = models.resnet18(pretrained=True)
                     self.predictor.conv1 = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)
                     output_size = self.num_objects + self.num_regions
                     num_ftrs = self.predictor.fc.in_features
                     self.predictor.fc = nn.Linear(num_ftrs, output_size)
-
-                    state_dict = torch.load('data/models/saven_gt/audio/best_test.pth', map_location="cpu")
-                    cleaned_state_dict = {k[len('module.predictor.'):]: v for k, v in
-                                          state_dict['audio_predictor'].items() if 'module.predictor.' in k}
-                    self.predictor.load_state_dict(cleaned_state_dict)
-                    self.predictor.fc = nn.Linear(num_ftrs, 2)
-                # self.predictor.fc = nn.Linear(4608, 2)
             else:
                 self.predictor = models.resnet18(pretrained=True)
                 self.predictor.conv1 = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)
                 self.predictor.fc = nn.Linear(512, 23)
 
         if self.predict_label:
-            # self.classifier = models.resnet18(pretrained=True)
-            # self.classifier.conv1 = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)
-            # self.classifier.fc = nn.Linear(512, 21)
-
-            logger.info("Loading pre-trained audio network for object and region predictor")
             self.classifier = models.resnet18(pretrained=True)
             self.classifier.conv1 = nn.Conv2d(2, 64, kernel_size=7, stride=2, padding=3, bias=False)
             output_size = self.num_objects + self.num_regions
             num_ftrs = self.classifier.fc.in_features
             self.classifier.fc = nn.Linear(num_ftrs, output_size)
-
-            state_dict = torch.load('data/models/saven_gt/audio/best_test.pth', map_location="cpu")
-            cleaned_state_dict = {k[len('module.predictor.'):]: v for k, v in
-                                  state_dict['audio_predictor'].items() if 'module.predictor.' in k}
-            self.classifier.load_state_dict(cleaned_state_dict)
 
         self.last_pointgoal = [None] * num_env
         self.last_label = [None] * num_env
@@ -123,21 +103,23 @@ class BeliefPredictor(nn.Module):
             self.regressor_criterion = nn.MSELoss().to(device=self.device)
             self.optimizer = None
 
-        # self.load_pretrained_weights()
+        self.load_pretrained_weights()
 
     def load_pretrained_weights(self):
+
+        state_dict = torch.load('data/models/saven/audio/best_test.pth', map_location="cpu")
+        cleaned_state_dict = {k[len('module.predictor.'):]: v for k, v in
+                              state_dict['audio_predictor'].items() if 'module.predictor.' in k}
+
         if self.predict_location:
-            # train location predictor in the online fashion
-            pass
+            logger.info("Loading pre-trained audio network for sound location predictor")
+            self.predictor.load_state_dict(cleaned_state_dict)
+            num_ftrs = self.predictor.fc.in_features
+            self.predictor.fc = nn.Linear(num_ftrs, 2)
 
         if self.predict_label:
-            state_dict = torch.load('data/pretrained_weights/semantic_audionav/savi/label_predictor.pth')
-            cleaned_state_dict = {
-                k[len('predictor.'):]: v for k, v in state_dict['audiogoal_predictor'].items()
-                if 'predictor.' in k
-            }
+            logger.info("Loading pre-trained audio network for object and region predictor")
             self.classifier.load_state_dict(cleaned_state_dict)
-            logging.info("Loaded pretrained label classifier")
 
     def freeze_encoders(self):
         if self.config.online_training:

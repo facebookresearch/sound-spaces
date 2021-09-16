@@ -180,7 +180,7 @@ class SMTCNN_saven(nn.Module):
             num_ftrs = self.rgb_encoder.fc.in_features
             self.rgb_encoder.fc = nn.Linear(num_ftrs, output_size)
 
-            state_dict = torch.load('data/models/saven_gt/vision/best_test.pth', map_location="cpu")
+            state_dict = torch.load('data/models/saven/vision/best_test.pth', map_location="cpu")
             cleaned_state_dict = {k[len('module.predictor.'):]: v for k, v in state_dict['vision_predictor'].items()
                                   if 'module.predictor.' in k}
             self.rgb_encoder.load_state_dict(cleaned_state_dict)
@@ -200,7 +200,7 @@ class SMTCNN_saven(nn.Module):
             num_ftrs = self.depth_encoder.fc.in_features
             self.depth_encoder.fc = nn.Linear(num_ftrs, output_size)
 
-            state_dict = torch.load('data/models/saven_gt/vision/best_test.pth', map_location="cpu")
+            state_dict = torch.load('data/models/saven/vision/best_test.pth', map_location="cpu")
             cleaned_state_dict = {k[len('module.predictor.'):]: v for k, v in state_dict['vision_predictor'].items()
                                   if 'module.predictor.' in k}
             self.depth_encoder.load_state_dict(cleaned_state_dict)
@@ -300,11 +300,11 @@ class VisionPredictor(nn.Module):
 
         output_size = self.num_objects + self.num_regions
         num_ftrs = self.predictor.fc.in_features
-        self.predictor.fc = nn.Linear(num_ftrs, output_size)  # modifying 1000 classes
-        self.sigmoid = nn.Sigmoid()  # torch.sigmoid
+        self.predictor.fc = nn.Linear(num_ftrs, output_size)
+        self.sigmoid = nn.Sigmoid()
 
         logger.info("Loading pre-trained vision network for visual GCN")
-        state_dict = torch.load('data/models/saven_gt/vision/best_test.pth', map_location="cpu")
+        state_dict = torch.load('data/models/saven/vision/best_test.pth', map_location="cpu")
         cleaned_state_dict = {k[len('module.predictor.'):]: v for k, v in state_dict['vision_predictor'].items()
                               if 'module.predictor.' in k}
         self.predictor.load_state_dict(cleaned_state_dict)
