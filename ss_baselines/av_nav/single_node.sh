@@ -11,4 +11,4 @@ python -u -m torch.distributed.launch \
     ss_baselines/av_nav/run.py \
     --exp-config ss_baselines/av_nav/config/audionav/mp3d/train_telephone/audiogoal_depth_ddppo.yaml \
     --model-dir data/models/ss2/mp3d/depth_ddppo \
-    TASK_CONFIG.SIMULATOR.USE_RENDERED_OBSERVATIONS False
+    CONTINUOUS True

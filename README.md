@@ -23,15 +23,23 @@ If you use the SoundSpaces platform in your research, please cite the following 
   booktitle =     {ECCV},
   year      =     {2020}
 }
+
+@article{chen22soundspaces2,
+  title     =     {SoundSpaces 2.0: A Simulation Platform for Visual-Acoustic Learning},
+  author    =     {Changan Chen and Carl Schissler and Sanchit Garg and Philip Kobernik and Alexander Clegg and Paul Calamia and Dhruv Batra and Philip W Robinson and Kristen Grauman},
+  journal   =     {arXiv},
+  year      =     {2022}
+}
 ```
 
 ## Installation 
-1. Install [habitat-lab v0.1.7](https://github.com/facebookresearch/habitat-lab) and [habitat-sim v0.1.7](https://github.com/facebookresearch/habitat-sim)
+1. Install [habitat-lab v0.2.1](https://github.com/facebookresearch/habitat-lab) and [habitat-sim v0.2.1](https://github.com/facebookresearch/habitat-sim)
 2. Install this repo into pip by running the following command:
 ```
 pip install -e .
 ```
-3. Following instructions on the [dataset](soundspaces/README.md) page to download the rendered audio data and datasets
+3. To use SoundSpaces 1.0, follow instructions on the [dataset](soundspaces/README.md) page to download the rendered audio data and datasets.
+4. ***[New]*** To use SoundSpaces 2.0, add ```--audio``` flag while building Habitat-Sim from the source.
 
 ## Usage
 This repo supports benchmarking PointGoal, AudioGoal and AudioPointGoal on Replica and Matterport3D datasets.
@@ -59,13 +67,21 @@ python ss_baselines/av_nav/run.py --run-type eval --exp-config ss_baselines/av_n
 ```
 python scripts/interactive_demo.py
 ```
+5. ***[New]*** Training continuous navigation agent 
+```
+python ss_baselines/av_nav/run.py --exp-config ss_baselines/av_nav/config/audionav/mp3d/train_telephone/audiogoal_depth_ddppo.yaml --model-dir data/models/ss2/mp3d/dav_nav CONTINUOUS True
+```
 
-## Data
+## SoundSpaces 1.0
 We provide acoustically realistic audio renderings for Replica and Matterport3D datasets. 
 The audio renderings exist in the form of pre-rendered room impulse responses (RIR), which allows 
 users to convolve with any source sounds they wish during training. 
 See [dataset](soundspaces/README.md) for more details.  
 Note that we do not open source the rendering code at this time.
+
+## SoundSpaces 2.0
+SoundSpaces 2.0 is a fast, continuous, configurable and generalizable audio-visual simulation platform that allows
+users to render sounds for arbitrary spaces and environments. 
 
 
 ## Contributing
