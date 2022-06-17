@@ -56,6 +56,7 @@ _C.DATASET_FILTER = []
 _C.VISUALIZE_FAILURE_ONLY = False
 _C.MASKING = True
 _C.DISPLAY_RESOLUTION = 128
+_C.CONTINUOUS = False
 # -----------------------------------------------------------------------------
 # EVAL CONFIG
 # -----------------------------------------------------------------------------

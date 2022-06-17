@@ -170,12 +170,13 @@ class AudioNavBaselineNet(Net):
                          (self._n_pointgoal if self._pointgoal else 0) + (self._hidden_size if self._audiogoal else 0)
         self.state_encoder = RNNStateEncoder(rnn_input_size, self._hidden_size)
 
-        if 'rgb' in observation_space.spaces and not extra_rgb:
-            rgb_shape = observation_space.spaces['rgb'].shape
-            summary(self.visual_encoder.cnn, (rgb_shape[2], rgb_shape[0], rgb_shape[1]), device='cpu')
-        if 'depth' in observation_space.spaces:
-            depth_shape = observation_space.spaces['depth'].shape
-            summary(self.visual_encoder.cnn, (depth_shape[2], depth_shape[0], depth_shape[1]), device='cpu')
+        # if 'rgb' in observation_space.spaces and not extra_rgb:
+        #     rgb_shape = observation_space.spaces['rgb'].shape
+        #     summary(self.visual_encoder.cnn, (rgb_shape[2], rgb_shape[0], rgb_shape[1]), device='cpu')
+        # if 'depth' in observation_space.spaces:
+        #     depth_shape = observation_space.spaces['depth'].shape
+        #     summary(self.visual_encoder.cnn, (depth_shape[2], depth_shape[0], depth_shape[1]), device='cpu')
+        print(self.visual_encoder.cnn)
         if self._audiogoal:
             audio_shape = observation_space.spaces[audiogoal_sensor].shape
             summary(self.audio_encoder.cnn, (audio_shape[2], audio_shape[0], audio_shape[1]), device='cpu')
@@ -207,6 +208,11 @@ class AudioNavBaselineNet(Net):
         x1 = torch.cat(x, dim=1)
         x2, rnn_hidden_states1 = self.state_encoder(x1, rnn_hidden_states, masks)
 
-        assert not torch.isnan(x2).any().item()
-
+        if torch.isnan(x2).any().item():
+            for key in observations:
+                print(key, torch.isnan(observations[key]).any().item())
+            print('rnn_old', torch.isnan(rnn_hidden_states).any().item())
+            print('rnn_new', torch.isnan(rnn_hidden_states1).any().item())
+            print('mask', torch.isnan(masks).any().item())
+            assert True
         return x2, rnn_hidden_states1

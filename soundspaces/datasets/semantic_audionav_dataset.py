@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+''#!/usr/bin/env python3
 
 # Copyright (c) Facebook, Inc. and its affiliates.
 # This source code is licensed under the MIT license found in the
@@ -208,6 +208,12 @@ class SemanticAudioNavDataset(Dataset):
                 for path in episode.shortest_paths:
                     for p_index, point in enumerate(path):
                         path[p_index] = ShortestPathPoint(**point)
+
+            if hasattr(self._config, 'CONTINUOUS') and self._config.CONTINUOUS:
+                # TODO: simplify
+                episode.goals[0].position[1] += 0.1
+                for view_point in episode.goals[0].view_points:
+                    view_point.agent_state.position[1] += 0.1
             self.episodes.append(episode)
 
             # the agent can navigate to any instance of the target object category

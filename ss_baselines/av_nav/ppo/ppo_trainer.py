@@ -19,9 +19,11 @@ import torch
 from torch.optim.lr_scheduler import LambdaLR
 from tqdm import tqdm
 from numpy.linalg import norm
+from gym import spaces
 
 from habitat import Config, logger
 from habitat.utils.visualizations.utils import observations_to_image
+from soundspaces.tasks.shortest_path_follower import ShortestPathFollower
 from ss_baselines.common.base_trainer import BaseRLTrainer
 from ss_baselines.common.baseline_registry import baseline_registry
 from ss_baselines.common.env_utils import construct_envs
@@ -305,7 +307,7 @@ class PPOTrainer(BaseRLTrainer):
                         update, self.config.NUM_UPDATES
                     )
 
-                for step in range(ppo_cfg.num_steps):
+                for step in tqdm(range(ppo_cfg.num_steps)):
                     delta_pth_time, delta_env_time, delta_steps = self._collect_rollout_step(
                         rollouts,
                         current_episode_reward,
@@ -451,11 +453,18 @@ class PPOTrainer(BaseRLTrainer):
         )
         if self.config.DISPLAY_RESOLUTION != model_resolution:
             observation_space = self.envs.observation_spaces[0]
-            observation_space.spaces['depth'].shape = (model_resolution, model_resolution, 1)
-            observation_space.spaces['rgb'].shape = (model_resolution, model_resolution, 1)
+            observation_space.spaces['depth'] = spaces.Box(low=0, high=1, shape=(model_resolution,
+                                                           model_resolution, 1), dtype=np.uint8)
+            observation_space.spaces['rgb'] = spaces.Box(low=0, high=1, shape=(model_resolution,
+                                                         model_resolution, 3), dtype=np.uint8)
         else:
             observation_space = self.envs.observation_spaces[0]
         self._setup_actor_critic_agent(ppo_cfg, observation_space)
+
+        if config.FOLLOW_SHORTEST_PATH:
+            follower = ShortestPathFollower(
+                self.envs.workers[0]._env.habitat_env.sim, 0.5, False
+            )
 
         self.agent.load_state_dict(ckpt_dict["state_dict"])
         self.actor_critic = self.agent.actor_critic
@@ -520,7 +529,12 @@ class PPOTrainer(BaseRLTrainer):
 
                 prev_actions.copy_(actions)
 
-            outputs = self.envs.step([a[0].item() for a in actions])
+            if config.FOLLOW_SHORTEST_PATH:
+                actions = [follower.get_next_action(
+                    self.envs.workers[0]._env.habitat_env.current_episode.goals[0].view_points[0].agent_state.position)]
+                outputs = self.envs.step(actions)
+            else:
+                outputs = self.envs.step([a[0].item() for a in actions])
 
             observations, rewards, dones, infos = [
                 list(x) for x in zip(*outputs)
@@ -585,14 +599,17 @@ class PPOTrainer(BaseRLTrainer):
                     t.update()
 
                     if len(self.config.VIDEO_OPTION) > 0:
-                        fps = self.config.TASK_CONFIG.SIMULATOR.VIEW_CHANGE_FPS \
-                                    if self.config.TASK_CONFIG.SIMULATOR.CONTINUOUS_VIEW_CHANGE else 1
+                        fps = int(1 / self.config.TASK_CONFIG.SIMULATOR.STEP_TIME)
+                        if 'sound' in current_episodes[i].info:
+                            sound = current_episodes[i].info['sound']
+                        else:
+                            sound = current_episodes[i].sound_id.split('/')[1][:-4]
                         generate_video(
                             video_option=self.config.VIDEO_OPTION,
                             video_dir=self.config.VIDEO_DIR,
                             images=rgb_frames[i][:-1],
                             scene_name=current_episodes[i].scene_id.split('/')[3],
-                            sound=current_episodes[i].info['sound'],
+                            sound=sound,
                             sr=self.config.TASK_CONFIG.SIMULATOR.AUDIO.RIR_SAMPLING_RATE,
                             episode_id=current_episodes[i].episode_id,
                             checkpoint_idx=checkpoint_index,

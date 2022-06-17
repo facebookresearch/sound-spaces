@@ -23,7 +23,7 @@ import torch.nn as nn
 import torch.nn.functional as f
 import moviepy.editor as mpy
 from gym.spaces import Box
-from moviepy.audio.AudioClip import CompositeAudioClip
+from moviepy.audio.AudioClip import CompositeAudioClip, AudioArrayClip
 
 from habitat.utils.visualizations.utils import images_to_video
 from habitat import logger
@@ -275,6 +275,7 @@ def plot_top_down_map(info, dataset='replica', pred=None):
         top_down_map = np.rot90(top_down_map, 1)
     return top_down_map
 
+
 def images_to_video_with_audio(
     images: List[np.ndarray],
     output_dir: str,
@@ -304,28 +305,17 @@ def images_to_video_with_audio(
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     video_name = video_name.replace(" ", "_").replace("\n", "_") + ".mp4"
-    
 
-    assert len(images) == len(audios) * fps
     audio_clips = []
-    temp_file_name = '/tmp/{}.wav'.format(random.randint(0, 10000))
-    # use amplitude scaling factor to reduce the volume of sounds
-    amplitude_scaling_factor = 100
+    multiplier = 0.5
     for i, audio in enumerate(audios):
-        # def f(t):
-        #     return audio[0, t], audio[1: t]
-        # 
-        # audio_clip = mpy.AudioClip(f, duration=1, fps=audio.shape[1])
-        wavfile.write(temp_file_name, sr, audio.T / amplitude_scaling_factor)
-        audio_clip = mpy.AudioFileClip(temp_file_name)
-        audio_clip = audio_clip.set_duration(1)
-        audio_clip = audio_clip.set_start(i)
+        audio_clip = AudioArrayClip(audio.T[:int(sr * 1 / fps)] * multiplier, fps=sr)
+        audio_clip = audio_clip.set_start(1 / fps * i)
         audio_clips.append(audio_clip)
     composite_audio_clip = CompositeAudioClip(audio_clips)
     video_clip = mpy.ImageSequenceClip(images, fps=fps)
     video_with_new_audio = video_clip.set_audio(composite_audio_clip)
     video_with_new_audio.write_videofile(os.path.join(output_dir, video_name))
-    os.remove(temp_file_name)
 
 
 def resize_observation(observations, model_resolution):

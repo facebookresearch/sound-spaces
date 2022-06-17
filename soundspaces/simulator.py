@@ -11,6 +11,7 @@ import logging
 import time
 import pickle
 import os
+import json
 
 import librosa
 import scipy
@@ -24,6 +25,7 @@ from habitat.core.registry import registry
 import habitat_sim
 from habitat_sim.utils.common import quat_from_angle_axis, quat_from_coeffs, quat_to_angle_axis
 from habitat.sims.habitat_simulator.actions import HabitatSimActions
+from habitat.sims.habitat_simulator.habitat_simulator import HabitatSimSensor, overwrite_config
 from habitat.core.simulator import (
     AgentState,
     Config,
@@ -32,29 +34,9 @@ from habitat.core.simulator import (
     ShortestPathPoint,
     Simulator,
 )
+import habitat_sim._ext.habitat_sim_bindings as hsim_bindings
 from soundspaces.utils import load_metadata
 from soundspaces.mp3d_utils import HouseReader
-
-
-def overwrite_config(config_from: Config, config_to: Any) -> None:
-    r"""Takes Habitat-API config and Habitat-Sim config structures. Overwrites
-    Habitat-Sim config with Habitat-API values, where a field name is present
-    in lowercase. Mostly used to avoid :ref:`sim_cfg.field = hapi_cfg.FIELD`
-    code.
-    Args:
-        config_from: Habitat-API config node.
-        config_to: Habitat-Sim config structure.
-    """
-
-    def if_config_to_lower(config):
-        if isinstance(config, Config):
-            return {key.lower(): val for key, val in config.items()}
-        else:
-            return config
-
-    for attr, value in config_from.items():
-        if hasattr(config_to, attr.lower()):
-            setattr(config_to, attr.lower(), if_config_to_lower(value))
 
 
 class DummySimulator:
@@ -106,7 +88,7 @@ class SoundSpacesSim(Simulator, ABC):
         pass
 
     def __init__(self, config: Config) -> None:
-        self.config = config
+        self.config = self.habitat_config = config
         agent_config = self._get_agent_config()
         sim_sensors = []
         for sensor_name in agent_config.SENSORS:
@@ -165,34 +147,101 @@ class SoundSpacesSim(Simulator, ABC):
                 self._frame_cache = pickle.load(fo)
         else:
             self._sim = habitat_sim.Simulator(config=self.sim_config)
+            self.add_acoustic_config()
+            self.material_configured = False
+
+    def add_acoustic_config(self):
+        acoustics_config = hsim_bindings.RLRAudioPropagationConfiguration()
+        acoustics_config.threadCount = 1
+        acoustics_config.sampleRate = self.config.AUDIO.RIR_SAMPLING_RATE
+        acoustics_config.irTime = self.config.AUDIO.IR_TIME
+        acoustics_config.indirectRayCount = 500
+        acoustics_config.temporalCoherence = True
+        acoustics_config.meshSimplification = False
+        acoustics_config.enableMaterials = True
+        # acoustics_config.transmission = True
+
+        channel_layout = hsim_bindings.RLRAudioPropagationChannelLayout()
+        channel_layout.channelType = hsim_bindings.RLRAudioPropagationChannelLayoutType.Binaural
+        channel_layout.channelCount = 2
+
+        audio_sensor_spec = habitat_sim.AudioSensorSpec()
+        audio_sensor_spec.uuid = "audio_sensor"
+        audio_sensor_spec.acousticsConfig = acoustics_config
+        audio_sensor_spec.channelLayout = channel_layout
+        self._sim.add_sensor(audio_sensor_spec)
 
     def create_sim_config(
-            self, _sensor_suite: SensorSuite
+        self, _sensor_suite: SensorSuite
     ) -> habitat_sim.Configuration:
         sim_config = habitat_sim.SimulatorConfiguration()
+        # Check if Habitat-Sim is post Scene Config Update
+        if not hasattr(sim_config, "scene_id"):
+            raise RuntimeError(
+                "Incompatible version of Habitat-Sim detected, please upgrade habitat_sim"
+            )
         overwrite_config(
-            config_from=self.config.HABITAT_SIM_V0, config_to=sim_config
+            config_from=self.config.HABITAT_SIM_V0,
+            config_to=sim_config,
+            # Ignore key as it gets propogated to sensor below
+            ignore_keys={"gpu_gpu"},
         )
         sim_config.scene_id = self.config.SCENE
+        sim_config.enable_physics = False
+        sim_config.scene_dataset_config_file = 'data/scene_datasets/mp3d/mp3d.scene_dataset_config.json'
         agent_config = habitat_sim.AgentConfiguration()
         overwrite_config(
-            config_from=self.get_agent_config(), config_to=agent_config
+            config_from=self._get_agent_config(),
+            config_to=agent_config,
+            # These keys are only used by Hab-Lab
+            ignore_keys={
+                "is_set_start_state",
+                # This is the Sensor Config. Unpacked below
+                "sensors",
+                "start_position",
+                "start_rotation",
+                "goal_position",
+                "offset",
+                "duration",
+                "sound_id",
+                "mass",
+                "linear_acceleration",
+                "angular_acceleration",
+                "linear_friction",
+                "angular_friction",
+                "coefficient_of_restitution",
+            },
         )
 
         sensor_specifications = []
         for sensor in _sensor_suite.sensors.values():
-            sim_sensor_cfg = habitat_sim.SensorSpec()
+            assert isinstance(sensor, HabitatSimSensor)
+            sim_sensor_cfg = sensor._get_default_spec()  # type: ignore[misc]
             overwrite_config(
-                config_from=sensor.config, config_to=sim_sensor_cfg
+                config_from=sensor.config,
+                config_to=sim_sensor_cfg,
+                # These keys are only used by Hab-Lab
+                # or translated into the sensor config manually
+                ignore_keys=sensor._config_ignore_keys,
+                # TODO consider making trans_dict a sensor class var too.
+                trans_dict={
+                    "sensor_model_type": lambda v: getattr(
+                        habitat_sim.FisheyeSensorModelType, v
+                    ),
+                    "sensor_subtype": lambda v: getattr(
+                        habitat_sim.SensorSubType, v
+                    ),
+                },
             )
             sim_sensor_cfg.uuid = sensor.uuid
             sim_sensor_cfg.resolution = list(
                 sensor.observation_space.shape[:2]
             )
-            sim_sensor_cfg.parameters["hfov"] = str(sensor.config.HFOV)
 
+            # TODO(maksymets): Add configure method to Sensor API to avoid
             # accessing child attributes through parent interface
-            sim_sensor_cfg.sensor_type = sensor.sim_sensor_type  # type: ignore
+            # We know that the Sensor has to be one of these Sensors
+            sim_sensor_cfg.sensor_type = sensor.sim_sensor_type
             sim_sensor_cfg.gpu2gpu_transfer = (
                 self.config.HABITAT_SIM_V0.GPU_GPU
             )
@@ -208,13 +257,6 @@ class SoundSpacesSim(Simulator, ABC):
     @property
     def sensor_suite(self) -> SensorSuite:
         return self._sensor_suite
-
-    def get_agent_config(self, agent_id: Optional[int] = None) -> Any:
-        if agent_id is None:
-            agent_id = self.config.DEFAULT_AGENT_ID
-        agent_name = self.config.AGENTS[agent_id]
-        agent_config = getattr(self.config, agent_name)
-        return agent_config
 
     def _update_agents_state(self) -> bool:
         is_updated = False
@@ -339,14 +381,25 @@ class SoundSpacesSim(Simulator, ABC):
                 del self._sim
                 self.sim_config = self.create_sim_config(self._sensor_suite)
                 self._sim = habitat_sim.Simulator(self.sim_config)
+                if not self.config.USE_RENDERED_OBSERVATIONS:
+                    self.add_acoustic_config()
+                    self.material_configured = False
                 self._update_agents_state()
                 self._frame_cache = dict()
+
             logging.debug('Loaded scene {}'.format(self.current_scene_name))
 
             self.points, self.graph = load_metadata(self.metadata_dir)
             for node in self.graph.nodes():
                 self._position_to_index_mapping[self.position_encoding(self.graph.nodes()[node]['point'])] = node
             self._instance2label_mapping = None
+
+        if not self.config.USE_RENDERED_OBSERVATIONS:
+            audio_sensor = self._sim.get_agent(0)._sensors["audio_sensor"]
+            audio_sensor.setAudioSourceTransform(np.array(self.config.AGENT_0.GOAL_POSITION) + np.array([0, 1.5, 0]))
+            if not self.material_configured:
+                audio_sensor.setAudioMaterialsJSON("data/mp3d_material_config.json")
+                self.material_configured = True
 
         if not is_same_scene or not is_same_sound:
             self._audiogoal_cache = dict()
@@ -507,6 +560,7 @@ class SoundSpacesSim(Simulator, ABC):
             self.get_orientation(), self.graph.nodes[self._receiver_position_index]['point']))
 
         sim_obs = self._get_sim_observation()
+
         if self.config.USE_RENDERED_OBSERVATIONS:
             self._sim.set_sensor_observations(sim_obs)
         self._prev_sim_obs = sim_obs
@@ -566,16 +620,19 @@ class SoundSpacesSim(Simulator, ABC):
             logging.debug('Step count is greater than duration. Empty spectrogram.')
             audiogoal = np.zeros((2, sampling_rate))
         else:
-            binaural_rir_file = os.path.join(self.binaural_rir_dir, str(self.azimuth_angle), '{}_{}.wav'.format(
-                self._receiver_position_index, self._source_position_index))
-            try:
-                sampling_freq, binaural_rir = wavfile.read(binaural_rir_file)  # float32
-            except ValueError:
-                logging.warning("{} file is not readable".format(binaural_rir_file))
-                binaural_rir = np.zeros((sampling_rate, 2)).astype(np.float32)
-            if len(binaural_rir) == 0:
-                logging.debug("Empty RIR file at {}".format(binaural_rir_file))
-                binaural_rir = np.zeros((sampling_rate, 2)).astype(np.float32)
+            if self.config.USE_RENDERED_OBSERVATIONS:
+                binaural_rir_file = os.path.join(self.binaural_rir_dir, str(self.azimuth_angle), '{}_{}.wav'.format(
+                    self._receiver_position_index, self._source_position_index))
+                try:
+                    sampling_freq, binaural_rir = wavfile.read(binaural_rir_file)  # float32
+                except ValueError:
+                    logging.warning("{} file is not readable".format(binaural_rir_file))
+                    binaural_rir = np.zeros((sampling_rate, 2)).astype(np.float32)
+                if len(binaural_rir) == 0:
+                    logging.debug("Empty RIR file at {}".format(binaural_rir_file))
+                    binaural_rir = np.zeros((sampling_rate, 2)).astype(np.float32)
+            else:
+                binaural_rir = np.transpose(np.array(self._sim.get_sensor_observations()["audio_sensor"]))
 
             # by default, convolve in full mode, which preserves the direct sound
             if self.current_source_sound.shape[0] == sampling_rate:
@@ -751,3 +808,6 @@ class SoundSpacesSim(Simulator, ABC):
             return observations
         else:
             return None
+
+    def make_greedy_follower(self, *args, **kwargs):
+        return self._sim.make_greedy_follower(*args, **kwargs)

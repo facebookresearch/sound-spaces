@@ -24,7 +24,7 @@ CONFIG_FILE_SEPARATOR = ","
 # -----------------------------------------------------------------------------
 _C = CN()
 _C.SEED = 0
-_C.BASE_TASK_CONFIG_PATH = "configs/tasks/pointgoal.yaml"
+_C.BASE_TASK_CONFIG_PATH = "configs/audionav/av_nav/mp3d/audiogoal.yaml"
 _C.TASK_CONFIG = CN()  # task_config will be stored as a config node
 _C.CMD_TRAILING_OPTS = []  # store command line options as list of strings
 _C.TRAINER_NAME = "AVNavTrainer"
@@ -50,6 +50,8 @@ _C.EXTRA_RGB = False
 _C.DEBUG = False
 _C.USE_LAST_CKPT = False
 _C.DISPLAY_RESOLUTION = 128
+_C.CONTINUOUS = False
+_C.FOLLOW_SHORTEST_PATH = False
 # -----------------------------------------------------------------------------
 # EVAL CONFIG
 # -----------------------------------------------------------------------------
@@ -111,6 +113,7 @@ _TC.SIMULATOR.VIEW_CHANGE_FPS = 10
 _TC.SIMULATOR.SCENE_DATASET = 'replica'
 _TC.SIMULATOR.USE_RENDERED_OBSERVATIONS = True
 _TC.SIMULATOR.SCENE_OBSERVATION_DIR = 'data/scene_observations'
+_TC.SIMULATOR.STEP_TIME = 1.0
 _TC.SIMULATOR.AUDIO = CN()
 _TC.SIMULATOR.AUDIO.SCENE = ""
 _TC.SIMULATOR.AUDIO.BINAURAL_RIR_DIR = "data/binaural_rirs"
@@ -121,6 +124,8 @@ _TC.SIMULATOR.AUDIO.POINTS_FILE = 'points.txt'
 _TC.SIMULATOR.AUDIO.GRAPH_FILE = 'graph.pkl'
 _TC.SIMULATOR.AUDIO.HAS_DISTRACTOR_SOUND = False
 _TC.SIMULATOR.AUDIO.EVERLASTING = True
+_TC.SIMULATOR.AUDIO.IR_TIME = 1.0
+_TC.SIMULATOR.AUDIO.CROSSFADE = False
 # -----------------------------------------------------------------------------
 # DistanceToGoal Measure
 # -----------------------------------------------------------------------------
@@ -129,10 +134,13 @@ _TC.TASK.DISTANCE_TO_GOAL.TYPE = "DistanceToGoal"
 _TC.TASK.DISTANCE_TO_GOAL.DISTANCE_TO = "POINT"
 _TC.TASK.NORMALIZED_DISTANCE_TO_GOAL = CN()
 _TC.TASK.NORMALIZED_DISTANCE_TO_GOAL.TYPE = "NormalizedDistanceToGoal"
+_TC.TASK.SUCCESS_WHEN_SILENT = CN()
+_TC.TASK.SUCCESS_WHEN_SILENT.TYPE = "SWS"
 # -----------------------------------------------------------------------------
 # Dataset extension
 # -----------------------------------------------------------------------------
 _TC.DATASET.VERSION = 'v1'
+_TC.DATASET.CONTINUOUS = False
 # -----------------------------------------------------------------------------
 # NumberOfAction Measure
 # -----------------------------------------------------------------------------
@@ -141,6 +149,8 @@ _TC.TASK.NUM_ACTION = CN()
 _TC.TASK.NUM_ACTION.TYPE = "NA"
 _TC.TASK.SUCCESS_WEIGHTED_BY_NUM_ACTION = CN()
 _TC.TASK.SUCCESS_WEIGHTED_BY_NUM_ACTION.TYPE = "SNA"
+_TC.TASK.ORACLE_ACTION_SENSOR = CN()
+_TC.TASK.ORACLE_ACTION_SENSOR.TYPE = "OracleActionSensor"
 
 
 def merge_from_path(config, config_paths):
@@ -191,20 +201,33 @@ def get_config(
         config.merge_from_list(opts)
 
     dirs = [config.VIDEO_DIR, config.TENSORBOARD_DIR, config.CHECKPOINT_FOLDER]
-    if run_type == 'train':
-        # check dirs
-        if any([os.path.exists(d) for d in dirs]):
-            for d in dirs:
-                if os.path.exists(d):
-                    print('{} exists'.format(d))
-            if overwrite or input('Output directory already exists! Overwrite the folder? (y/n)') == 'y':
-                for d in dirs:
-                    if os.path.exists(d):
-                        shutil.rmtree(d)
+    # if run_type == 'train':
+    #     # check dirs
+    #     if any([os.path.exists(d) for d in dirs]):
+    #         for d in dirs:
+    #             if os.path.exists(d):
+    #                 print('{} exists'.format(d))
+    #         if overwrite or input('Output directory already exists! Overwrite the folder? (y/n)') == 'y':
+    #             for d in dirs:
+    #                 if os.path.exists(d):
+    #                     shutil.rmtree(d)
 
     config.TASK_CONFIG.defrost()
     config.TASK_CONFIG.SIMULATOR.USE_SYNC_VECENV = config.USE_SYNC_VECENV
-    config.TASK_CONFIG.SIMULATOR.FORWARD_STEP_SIZE = config.TASK_CONFIG.SIMULATOR.GRID_SIZE
+    if config.CONTINUOUS:
+        config.TASK_CONFIG.SIMULATOR.FORWARD_STEP_SIZE = 0.25
+        config.TASK_CONFIG.SIMULATOR.TYPE = "ContinuousSoundSpacesSim"
+        config.TASK_CONFIG.SIMULATOR.USE_RENDERED_OBSERVATIONS = False
+        config.TASK_CONFIG.SIMULATOR.STEP_TIME = 0.25
+        config.TASK_CONFIG.SIMULATOR.AUDIO.CROSSFADE = True
+        config.TASK_CONFIG.DATASET.CONTINUOUS = True
+        config.RL.DISTANCE_REWARD_SCALE = 1.0
+
+        # config.TASK_CONFIG.SIMULATOR.STEP_TIME = 1.0
+        # config.TASK_CONFIG.SIMULATOR.FORWARD_STEP_SIZE = 1.0
+        # config.TASK_CONFIG.SIMULATOR.TURN_ANGLE = 90
+    else:
+        config.TASK_CONFIG.SIMULATOR.FORWARD_STEP_SIZE = config.TASK_CONFIG.SIMULATOR.GRID_SIZE
     config.TASK_CONFIG.freeze()
     config.freeze()
     return config

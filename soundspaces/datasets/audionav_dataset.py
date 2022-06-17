@@ -154,5 +154,10 @@ class AudioNavDataset(Dataset):
                 for path in episode.shortest_paths:
                     for p_index, point in enumerate(path):
                         path[p_index] = ShortestPathPoint(**point)
+
+            if hasattr(self._config, 'CONTINUOUS') and self._config.CONTINUOUS:
+                # TODO: fix
+                episode.goals[0].position[1] += 0.1
+
             self.episodes.append(episode)
             episode_cnt += 1

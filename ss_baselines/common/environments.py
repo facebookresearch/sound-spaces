@@ -15,6 +15,7 @@ in habitat. Customized environments should be registered using
 
 from typing import Optional, Type
 import logging
+import math
 
 import habitat
 from habitat import Config, Dataset
@@ -38,11 +39,12 @@ class AudioNavRLEnv(habitat.RLEnv):
     def __init__(self, config: Config, dataset: Optional[Dataset] = None):
         self._rl_config = config.RL
         self._core_env_config = config.TASK_CONFIG
+        self._continuous = config.CONTINUOUS
 
         self._previous_target_distance = None
         self._previous_action = None
         self._episode_distance_covered = None
-        self._success_distance = self._core_env_config.TASK.SUCCESS_DISTANCE
+        self._success_distance = self._core_env_config.TASK.SUCCESS.SUCCESS_DISTANCE
         super().__init__(self._core_env_config, dataset)
 
     def reset(self):
@@ -51,9 +53,12 @@ class AudioNavRLEnv(habitat.RLEnv):
         observations = super().reset()
         logging.debug(super().current_episode)
 
-        self._previous_target_distance = self.habitat_env.current_episode.info[
-            "geodesic_distance"
-        ]
+        if self._continuous:
+            self._previous_target_distance = self._distance_target()
+        else:
+            self._previous_target_distance = self.habitat_env.current_episode.info[
+                "geodesic_distance"
+            ]
         return observations
 
     def step(self, *args, **kwargs):
@@ -74,7 +79,6 @@ class AudioNavRLEnv(habitat.RLEnv):
 
         if self._rl_config.WITH_DISTANCE_REWARD:
             current_target_distance = self._distance_target()
-            # if current_target_distance < self._previous_target_distance:
             reward += (self._previous_target_distance - current_target_distance) * self._rl_config.DISTANCE_REWARD_SCALE
             self._previous_target_distance = current_target_distance
 
@@ -82,22 +86,17 @@ class AudioNavRLEnv(habitat.RLEnv):
             reward += self._rl_config.SUCCESS_REWARD
             logging.debug('Reaching goal!')
 
+        assert not math.isnan(reward)
+
         return reward
 
     def _distance_target(self):
-        current_position = self._env.sim.get_agent_state().position.tolist()
-        target_positions = [goal.position for goal in self._env.current_episode.goals]
-        distance = self._env.sim.geodesic_distance(
-            current_position, target_positions
-        )
-        return distance
+        return self._env.get_metrics()['distance_to_goal']
 
     def _episode_success(self):
-        if (
-            self._env.task.is_stop_called
-            # and self._distance_target() < self._success_distance
-            and self._env.sim.reaching_goal
-        ):
+        if self._env.task.is_stop_called and \
+                ((self._continuous and self._distance_target() < self._success_distance) or
+                 (not self._continuous and self._env.sim.reaching_goal)):
             return True
         return False
 

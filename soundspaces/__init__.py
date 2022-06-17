@@ -6,6 +6,7 @@
 
 from soundspaces.tasks.action_space import MoveOnlySpaceConfiguration
 from soundspaces.simulator import SoundSpacesSim
+from soundspaces.continuous_simulator import ContinuousSoundSpacesSim
 from soundspaces.datasets.audionav_dataset import AudioNavDataset
 from soundspaces.datasets.semantic_audionav_dataset import SemanticAudioNavDataset
 from soundspaces.tasks.audionav_task import AudioNavigationTask

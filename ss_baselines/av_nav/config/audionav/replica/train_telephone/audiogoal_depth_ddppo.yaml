@@ -1,21 +1,10 @@
-BASE_TASK_CONFIG_PATH: "configs/audionav/av_nav/mp3d/interactive_demo.yaml"
-TRAINER_NAME: "ppo"
-ENV_NAME: "AudioNavRLEnv"
-SIMULATOR_GPU_ID: 0
-TORCH_GPU_ID: 0
-TENSORBOARD_DIR: "tb"
-VIDEO_DIR: "video_dir"
-EVAL_CKPT_PATH_DIR: "data"
-NUM_PROCESSES: 1
-SENSORS: ["RGB_SENSOR"]
-CHECKPOINT_FOLDER: "data"
-# number of times updating the ppo agent
-NUM_UPDATES: 300000
+BASE_TASK_CONFIG_PATH: "configs/audionav/av_nav/replica/audiogoal.yaml"
+TRAINER_NAME: "ddppo"
+NUM_PROCESSES: 5
+SENSORS: ["DEPTH_SENSOR"]
+NUM_UPDATES: 40000
 LOG_INTERVAL: 10
 CHECKPOINT_INTERVAL: 50
-DEBUG: True
-
-TEST_EPISODE_COUNT: 500
 VIDEO_OPTION: []
 VISUALIZATION_OPTION: []
 
@@ -40,7 +29,11 @@ RL:
     use_linear_lr_decay: True
     # window size for calculating the past rewards
     reward_window_size: 50
-
-EVAL:
-  SPLIT: "val_telephone"
-  USE_CKPT_CONFIG: True
+    use_normalized_advantage: False
+  DDPPO:
+    sync_frac: 0.6
+    distrib_backend: "GLOO"
+    rnn_type: "GRU"
+    num_recurrent_layers: 1
+    backbone: "custom_resnet18"
+    reset_critic: True

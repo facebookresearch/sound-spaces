@@ -7,3 +7,4 @@
 # LICENSE file in the root directory of this source tree.
 
 from ss_baselines.av_nav.ppo.ppo_trainer import PPOTrainer
+from ss_baselines.av_nav.ddppo.ddppo_trainer import DDPPOTrainer

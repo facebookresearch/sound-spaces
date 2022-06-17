@@ -29,7 +29,7 @@ class MapNavEnv(habitat.RLEnv):
         self._previous_action = None
         self._previous_observation = None
         self._episode_distance_covered = None
-        self._success_distance = self._core_env_config.TASK.SUCCESS_DISTANCE
+        self._success_distance = self._core_env_config.TASK.SUCCESS.SUCCESS_DISTANCE
         super().__init__(self._core_env_config, dataset)
 
         self.planner = Planner(model_dir=self._config.MODEL_DIR,

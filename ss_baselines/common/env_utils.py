@@ -43,6 +43,9 @@ def construct_envs(
     env_classes = [env_class for _ in range(num_processes)]
     dataset = make_dataset(config.TASK_CONFIG.DATASET.TYPE)
     scenes = dataset.get_scenes_to_load(config.TASK_CONFIG.DATASET)
+    if not config.TASK_CONFIG.SIMULATOR.USE_RENDERED_OBSERVATIONS and '2n8kARJN3HM' in scenes:
+        # this scene does not work for continuous rendering
+        scenes.remove('2n8kARJN3HM')
 
     # rearrange scenes in the order of scene size since there is a severe imbalance of data size
     if "replica" in config.TASK_CONFIG.DATASET.SCENES_DIR:
