@@ -14,7 +14,6 @@ import glob
 import magnum as mn
 import numpy as np
 
-import habitat_sim._ext.habitat_sim_bindings as hsim_bindings
 from habitat_sim.utils.common import quat_from_angle_axis
 import habitat_sim
 from scipy.io import wavfile
@@ -62,14 +61,14 @@ def make_configuration(scene_id, resolution=(512, 256), fov=20, visual_sensors=T
 
 def add_acoustic_config(sim, args):
     # create the acoustic configs
-    acoustics_config = hsim_bindings.RLRAudioPropagationConfiguration()
+    acoustics_config = habitat_sim.sensor.RLRAudioPropagationConfiguration()
     acoustics_config.enableMaterials = (args.dataset in ['mp3d', 'gibson'])
     acoustics_config.sampleRate = 44100
 
     # create channel layout
-    channel_layout = hsim_bindings.RLRAudioPropagationChannelLayout()
+    channel_layout = habitat_sim.sensor.RLRAudioPropagationChannelLayout()
     channel_layout.channelType = (
-        hsim_bindings.RLRAudioPropagationChannelLayoutType.Ambisonics
+        habitat_sim.sensor.RLRAudioPropagationChannelLayoutType.Ambisonics
     )
     channel_layout.channelCount = 1
 

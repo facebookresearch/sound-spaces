@@ -34,7 +34,6 @@ from habitat.core.simulator import (
     ShortestPathPoint,
     Simulator,
 )
-import habitat_sim._ext.habitat_sim_bindings as hsim_bindings
 from soundspaces.utils import load_metadata
 from soundspaces.mp3d_utils import HouseReader
 
@@ -151,7 +150,7 @@ class SoundSpacesSim(Simulator, ABC):
             self.material_configured = False
 
     def add_acoustic_config(self):
-        acoustics_config = hsim_bindings.RLRAudioPropagationConfiguration()
+        acoustics_config = habitat_sim.sensor.RLRAudioPropagationConfiguration()
         acoustics_config.threadCount = 1
         acoustics_config.sampleRate = self.config.AUDIO.RIR_SAMPLING_RATE
         acoustics_config.irTime = self.config.AUDIO.IR_TIME
@@ -161,8 +160,8 @@ class SoundSpacesSim(Simulator, ABC):
         acoustics_config.enableMaterials = True
         # acoustics_config.transmission = True
 
-        channel_layout = hsim_bindings.RLRAudioPropagationChannelLayout()
-        channel_layout.channelType = hsim_bindings.RLRAudioPropagationChannelLayoutType.Binaural
+        channel_layout = habitat_sim.sensor.RLRAudioPropagationChannelLayout()
+        channel_layout.channelType = habitat_sim.sensor.RLRAudioPropagationChannelLayoutType.Binaural
         channel_layout.channelCount = 2
 
         audio_sensor_spec = habitat_sim.AudioSensorSpec()
