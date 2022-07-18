@@ -33,20 +33,23 @@ If you use the SoundSpaces platform in your research, please cite the following 
 ```
 
 ## Installation 
-1. Install [habitat-lab v0.2.1](https://github.com/facebookresearch/habitat-lab) and [habitat-sim v0.2.1](https://github.com/facebookresearch/habitat-sim)
+1. Install [habitat-lab v0.2.1](https://github.com/facebookresearch/habitat-lab) and [habitat-sim from this commit](https://github.com/facebookresearch/habitat-sim/tree/80f8e31140eaf50fe6c5ab488525ae1bdf250bd9)
 2. Install this repo into pip by running the following command:
 ```
 pip install -e .
 ```
 3. To use SoundSpaces 1.0, follow instructions on the [dataset](soundspaces/README.md) page to download the rendered audio data and datasets.
-4. ***[New]*** To use SoundSpaces 2.0, add ```--audio``` flag while building Habitat-Sim from the source.
+4. ***[New]*** To use SoundSpaces 2.0, add ```--audio``` flag while [building Habitat-Sim from the source](https://github.com/facebookresearch/habitat-sim/blob/80f8e31140eaf50fe6c5ab488525ae1bdf250bd9/BUILD_FROM_SOURCE.md).
 
 ## Usage
-This repo supports benchmarking PointGoal, AudioGoal and AudioPointGoal on Replica and Matterport3D datasets.
-We provide several baselines including a mapless end-to-end RL agent and a hierarchical model.  
+This repo renders audio-visual observations with high acoustic and spatial correspondence. 
+It supports various visual-acoustic learning tasks, including audio-visual embodied navigation, acoustics prediction from egocentric observations, etc.
+In this repo, we provide code for training and evaluating audio-visual navigation agents. 
+For other downstream tasks, please check out each paper's respective repo, 
+e.g., [visual acoustic matching](https://github.com/facebookresearch/visual-acoustic-matching) 
+and [audio-visual dereverberation](https://github.com/facebookresearch/learning-audio-visual-dereverberation)
 
-Below we show the commands for training and evaluating AudioGoal with Depth sensor on Replica, 
-but it applies to the other two tasks, other sensors and Matterport dataset as well. 
+Below we show some example commands for training and evaluating AudioGoal with depth sensor on Replica. 
 1. Training
 ```
 python ss_baselines/av_nav/run.py --exp-config ss_baselines/av_nav/config/audionav/replica/train_telephone/audiogoal_depth.yaml --model-dir data/models/replica/audiogoal_depth
@@ -82,6 +85,12 @@ Note that we do not open source the rendering code at this time.
 ## SoundSpaces 2.0
 SoundSpaces 2.0 is a fast, continuous, configurable and generalizable audio-visual simulation platform that allows
 users to render sounds for arbitrary spaces and environments. 
+As a result of rendering accuracy improvements, the rendered IRs are different from SoundSpaces 1.0.
+
+### Some common issues
+* To render the monaural audio, set the microphone type to Ambisonics and channel size to 1 for now.
+* If you run into [invalid pointer issues](https://github.com/facebookresearch/habitat-sim/issues/1747), import quaternion before habitat_sim as a workaround.
+* See this [issue](https://github.com/facebookresearch/rlr-audio-propagation/issues/9) for solutions to GLIBC version issues
 
 
 ## Contributing
@@ -91,5 +100,5 @@ See the [CONTRIBUTING](CONTRIBUTING.md) file for how to help out.
 SoundSpaces is CC-BY-4.0 licensed, as found in the [LICENSE](LICENSE) file.
 
 The trained models and the task datasets are considered data derived from the correspondent scene datasets.
-- Matterport3D based task datasets and trained models are distributed with [Matterport3D Terms of Usehttp://kaldir.vc.in.tum.de/matterport/MP_TOS.pdf) and under [CC BY-NC-SA 3.0 US license](https://creativecommons.org/licenses/by-nc-sa/3.0/us/).
+- Matterport3D based task datasets and trained models are distributed with [Matterport3D Terms of Use](http://kaldir.vc.in.tum.de/matterport/MP_TOS.pdf) and under [CC BY-NC-SA 3.0 US license](https://creativecommons.org/licenses/by-nc-sa/3.0/us/).
 - Replica based task datasets, the code for generating such datasets, and trained models are under [Replica license](https://github.com/facebookresearch/Replica-Dataset/blob/master/LICENSE).
