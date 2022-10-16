@@ -24,10 +24,10 @@ If you use the SoundSpaces platform in your research, please cite the following 
   year      =     {2020}
 }
 
-@article{chen22soundspaces2,
+@inproceedings{chen22soundspaces2,
   title     =     {SoundSpaces 2.0: A Simulation Platform for Visual-Acoustic Learning},
   author    =     {Changan Chen and Carl Schissler and Sanchit Garg and Philip Kobernik and Alexander Clegg and Paul Calamia and Dhruv Batra and Philip W Robinson and Kristen Grauman},
-  journal   =     {arXiv},
+  booktitle =     {NeurIPS 2022 Datasets and Benchmarks Track},
   year      =     {2022}
 }
 ```
@@ -40,6 +40,7 @@ pip install -e .
 ```
 3. To use SoundSpaces 1.0, follow instructions on the [dataset](soundspaces/README.md) page to download the rendered audio data and datasets.
 4. ***[New]*** To use SoundSpaces 2.0, add ```--audio``` flag while [building Habitat-Sim from the source](https://github.com/facebookresearch/habitat-sim/blob/80f8e31140eaf50fe6c5ab488525ae1bdf250bd9/BUILD_FROM_SOURCE.md).
+For the latest features, use this [Habitat-Sim](https://github.com/facebookresearch/habitat-sim/tree/RLRAudioPropagationUpdate) version and this [RLR-Audio-Propagation](https://github.com/facebookresearch/rlr-audio-propagation/tree/UpdateAPI) version.
 
 ## Usage
 This repo renders audio-visual observations with high acoustic and spatial correspondence. 
@@ -86,9 +87,9 @@ Note that we do not open source the rendering code at this time.
 SoundSpaces 2.0 is a fast, continuous, configurable and generalizable audio-visual simulation platform that allows
 users to render sounds for arbitrary spaces and environments. 
 As a result of rendering accuracy improvements, the rendered IRs are different from SoundSpaces 1.0.
+Check out example jupyter notebook for a quick tutorial.
 
 ### Some common issues
-* To render the monaural audio, set the microphone type to Ambisonics and channel size to 1 for now.
 * If you run into [invalid pointer issues](https://github.com/facebookresearch/habitat-sim/issues/1747), import quaternion before habitat_sim as a workaround.
 * See this [issue](https://github.com/facebookresearch/rlr-audio-propagation/issues/9) for solutions to GLIBC version issues
 

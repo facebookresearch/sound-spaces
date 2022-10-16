@@ -27,6 +27,7 @@ def make_configuration(scene_id, resolution=(512, 256), fov=20, visual_sensors=T
     # simulator configuration
     backend_cfg = habitat_sim.SimulatorConfiguration()
     backend_cfg.scene_id = scene_id
+    backend_cfg.scene_dataset_config_file = "data/scene_datasets/mp3d/mp3d.scene_dataset_config.json"
     backend_cfg.enable_physics = False
 
     agent_cfg = habitat_sim.agent.AgentConfiguration()
