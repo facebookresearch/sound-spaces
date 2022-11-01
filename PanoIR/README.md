@@ -15,5 +15,5 @@ wget http://dl.fbaipublicfiles.com/SoundSpaces/PanoIR.zip && unzip PanoIR.zip
 ## Reproduce
 Run the following commands to customize the dataset to suit your own need.
 ```angular2html
-python PanoIR/read_panoIR.py --dataset mp3d
+python PanoIR/render_panoIR.py --dataset mp3d
 ```

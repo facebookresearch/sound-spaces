@@ -17,18 +17,17 @@ Moving around in the world is naturally a multisensory experience, but today's e
 ## Citing SoundSpaces
 If you use the SoundSpaces platform in your research, please cite the following [paper](https://arxiv.org/pdf/1912.11474.pdf):
 ```
-@inproceedings{chen20soundspaces,
-  title     =     {SoundSpaces: Audio-Visual Navigaton in 3D Environments},
-  author    =     {Changan Chen and Unnat Jain and Carl Schissler and Sebastia Vicenc Amengual Gari and Ziad Al-Halah and Vamsi Krishna Ithapu and Philip Robinson and Kristen Grauman},
-  booktitle =     {ECCV},
-  year      =     {2020}
-}
-
 @inproceedings{chen22soundspaces2,
   title     =     {SoundSpaces 2.0: A Simulation Platform for Visual-Acoustic Learning},
   author    =     {Changan Chen and Carl Schissler and Sanchit Garg and Philip Kobernik and Alexander Clegg and Paul Calamia and Dhruv Batra and Philip W Robinson and Kristen Grauman},
   booktitle =     {NeurIPS 2022 Datasets and Benchmarks Track},
   year      =     {2022}
+}
+@inproceedings{chen20soundspaces,
+  title     =     {SoundSpaces: Audio-Visual Navigaton in 3D Environments},
+  author    =     {Changan Chen and Unnat Jain and Carl Schissler and Sebastia Vicenc Amengual Gari and Ziad Al-Halah and Vamsi Krishna Ithapu and Philip Robinson and Kristen Grauman},
+  booktitle =     {ECCV},
+  year      =     {2020}
 }
 ```
 
@@ -40,7 +39,7 @@ pip install -e .
 ```
 3. To use SoundSpaces 1.0, follow instructions on the [dataset](soundspaces/README.md) page to download the rendered audio data and datasets.
 4. ***[New]*** To use SoundSpaces 2.0, add ```--audio``` flag while [building Habitat-Sim from the source](https://github.com/facebookresearch/habitat-sim/blob/80f8e31140eaf50fe6c5ab488525ae1bdf250bd9/BUILD_FROM_SOURCE.md).
-For the latest features, use this [Habitat-Sim](https://github.com/facebookresearch/habitat-sim/tree/RLRAudioPropagationUpdate) version and this [RLR-Audio-Propagation](https://github.com/facebookresearch/rlr-audio-propagation/tree/UpdateAPI) version.
+Use this [Habitat-Sim](https://github.com/facebookresearch/habitat-sim/tree/RLRAudioPropagationUpdate) branch for the latest features. 
 
 ## Usage
 This repo renders audio-visual observations with high acoustic and spatial correspondence. 
@@ -48,7 +47,7 @@ It supports various visual-acoustic learning tasks, including audio-visual embod
 In this repo, we provide code for training and evaluating audio-visual navigation agents. 
 For other downstream tasks, please check out each paper's respective repo, 
 e.g., [visual acoustic matching](https://github.com/facebookresearch/visual-acoustic-matching) 
-and [audio-visual dereverberation](https://github.com/facebookresearch/learning-audio-visual-dereverberation)
+and [audio-visual dereverberation](https://github.com/facebookresearch/learning-audio-visual-dereverberation).
 
 Below we show some example commands for training and evaluating AudioGoal with depth sensor on Replica. 
 1. Training
