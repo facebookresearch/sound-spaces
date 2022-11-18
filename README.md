@@ -30,6 +30,7 @@ If you use the SoundSpaces platform in your research, please cite the following 
   year      =     {2020}
 }
 ```
+If you use any of the 3D scene assets (Matterport3D, Replica, HM3D, Gibson, etc.), please make sure you cite these papers as well!
 
 ## Installation 
 1. Install [habitat-lab v0.2.1](https://github.com/facebookresearch/habitat-lab) and [habitat-sim from this commit](https://github.com/facebookresearch/habitat-sim/tree/80f8e31140eaf50fe6c5ab488525ae1bdf250bd9)
