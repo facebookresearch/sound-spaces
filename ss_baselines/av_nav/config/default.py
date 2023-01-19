@@ -124,7 +124,6 @@ _TC.SIMULATOR.AUDIO.POINTS_FILE = 'points.txt'
 _TC.SIMULATOR.AUDIO.GRAPH_FILE = 'graph.pkl'
 _TC.SIMULATOR.AUDIO.HAS_DISTRACTOR_SOUND = False
 _TC.SIMULATOR.AUDIO.EVERLASTING = True
-_TC.SIMULATOR.AUDIO.IR_TIME = 1.0
 _TC.SIMULATOR.AUDIO.CROSSFADE = False
 # -----------------------------------------------------------------------------
 # DistanceToGoal Measure

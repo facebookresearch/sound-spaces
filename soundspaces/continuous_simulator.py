@@ -112,23 +112,17 @@ class ContinuousSoundSpacesSim(Simulator, ABC):
         self._last_rir = None
         self._current_sample_index = 0
 
-    def add_acoustic_config(self):
-        acoustics_config = habitat_sim.sensor.RLRAudioPropagationConfiguration()
-        acoustics_config.threadCount = 1
-        acoustics_config.sampleRate = self.config.AUDIO.RIR_SAMPLING_RATE
-        acoustics_config.irTime = self.config.AUDIO.IR_TIME
-        acoustics_config.indirectRayCount = 500
-        acoustics_config.temporalCoherence = True
-        acoustics_config.transmission = True
-
-        channel_layout = habitat_sim.sensor.RLRAudioPropagationChannelLayout()
-        channel_layout.channelType = habitat_sim.sensor.RLRAudioPropagationChannelLayoutType.Binaural
-        channel_layout.channelCount = 2
-
+    def add_acoustic_config(self):        
         audio_sensor_spec = habitat_sim.AudioSensorSpec()
         audio_sensor_spec.uuid = "audio_sensor"
-        audio_sensor_spec.acousticsConfig = acoustics_config
-        audio_sensor_spec.channelLayout = channel_layout
+        audio_sensor_spec.enableMaterials = False
+        audio_sensor_spec.channelLayout.type = habitat_sim.sensor.RLRAudioPropagationChannelLayoutType.Binaural
+        audio_sensor_spec.channelLayout.channelCount = 2
+        audio_sensor_spec.acousticsConfig.sampleRate = self.config.AUDIO.RIR_SAMPLING_RATE
+        audio_sensor_spec.acousticsConfig.threadCount = 1
+        audio_sensor_spec.acousticsConfig.indirectRayCount = 500
+        audio_sensor_spec.acousticsConfig.temporalCoherence = True
+        audio_sensor_spec.acousticsConfig.transmission = True
         self._sim.add_sensor(audio_sensor_spec)
 
     def create_sim_config(

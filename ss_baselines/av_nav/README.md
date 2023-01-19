@@ -8,8 +8,8 @@ Pretrained weights are provided.
 
 ## Evaluating pretrained model
 ```
-py ss_baselines/av_nav/run.py --run-type eval --exp-config ss_baselines/av_nav/config/audionav/replica/test_telephone/audiogoal_depth.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/audionav/av_nav/replica/heard.pth 
-py ss_baselines/av_nav/run.py --run-type eval --exp-config ss_baselines/av_nav/config/audionav/replica/test_telephone/audiogoal_depth.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/audionav/av_nav/replica/unheard.pth EVAL.SPLIT test_multiple_unheard 
+python ss_baselines/av_nav/run.py --run-type eval --exp-config ss_baselines/av_nav/config/audionav/replica/test_telephone/audiogoal_depth.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/audionav/av_nav/replica/heard.pth 
+python ss_baselines/av_nav/run.py --run-type eval --exp-config ss_baselines/av_nav/config/audionav/replica/test_telephone/audiogoal_depth.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/audionav/av_nav/replica/unheard.pth EVAL.SPLIT test_multiple_unheard 
 ```
 
 

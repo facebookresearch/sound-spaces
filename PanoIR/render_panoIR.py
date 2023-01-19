@@ -62,21 +62,13 @@ def make_configuration(scene_id, resolution=(512, 256), fov=20, visual_sensors=T
 
 def add_acoustic_config(sim, args):
     # create the acoustic configs
-    acoustics_config = habitat_sim.sensor.RLRAudioPropagationConfiguration()
-    acoustics_config.enableMaterials = (args.dataset in ['mp3d', 'gibson'])
-    acoustics_config.sampleRate = 44100
-
-    # create channel layout
-    channel_layout = habitat_sim.sensor.RLRAudioPropagationChannelLayout()
-    channel_layout.channelType = (
-        habitat_sim.sensor.RLRAudioPropagationChannelLayoutType.Ambisonics
-    )
-    channel_layout.channelCount = 1
-
     audio_sensor_spec = habitat_sim.AudioSensorSpec()
     audio_sensor_spec.uuid = "audio_sensor"
-    audio_sensor_spec.acousticsConfig = acoustics_config
-    audio_sensor_spec.channelLayout = channel_layout
+    audio_sensor_spec.enableMaterials = False
+    audio_sensor_spec.channelLayout.type = habitat_sim.sensor.RLRAudioPropagationChannelLayoutType.Mono
+    audio_sensor_spec.channelLayout.channelCount = 1
+    audio_sensor_spec.position = [0.0, 1.5, 0.0]
+    audio_sensor_spec.acousticsConfig.sampleRate = 44100
 
     # add the audio sensor
     sim.add_sensor(audio_sensor_spec)

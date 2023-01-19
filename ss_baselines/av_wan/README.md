@@ -13,8 +13,8 @@ Pretrained weights are provided.
 
 ## Evaluating pretrained model
 ```
-py ss_baselines/av_wan/run.py --run-type eval --exp-config ss_baselines/av_wan/config/audionav/replica/test_with_am.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/audionav/av_wan/replica/heard.pth
-py ss_baselines/av_wan/run.py --run-type eval --exp-config ss_baselines/av_wan/config/audionav/replica/test_with_am.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/audionav/av_wan/replica/unheard.pth EVAL.SPLIT test_multiple_unheard 
+python ss_baselines/av_wan/run.py --run-type eval --exp-config ss_baselines/av_wan/config/audionav/replica/test_with_am.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/audionav/av_wan/replica/heard.pth
+python ss_baselines/av_wan/run.py --run-type eval --exp-config ss_baselines/av_wan/config/audionav/replica/test_with_am.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/audionav/av_wan/replica/unheard.pth EVAL.SPLIT test_multiple_unheard 
 ```
 
 

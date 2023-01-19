@@ -15,7 +15,7 @@ wget http://dl.fbaipublicfiles.com/SoundSpaces/datasets.tar.xz && tar xvf datase
 wget http://dl.fbaipublicfiles.com/SoundSpaces/pretrained_weights.tar.xz && tar xvf pretrained_weights.tar.xz
 ```
 2. Download [Replica-Dataset](https://github.com/facebookresearch/Replica-Dataset) and [Matterport3D](https://niessner.github.io/Matterport).
-3. Run the command below in the root directory to cache observations for two datasets
+3. Run the command below in the root directory to cache observations for two datasets (**with habitat-sim and habitat-lab versions being v0.1.7**)
 ```
 python scripts/cache_observations.py
 ```

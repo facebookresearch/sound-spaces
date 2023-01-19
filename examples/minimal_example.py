@@ -10,13 +10,15 @@ backend_cfg.scene_id = "data/scene_datasets/mp3d/UwV83HsGsw3/UwV83HsGsw3.glb"
 backend_cfg.scene_dataset_config_file = "data/scene_datasets/mp3d/mp3d.scene_dataset_config.json"
 backend_cfg.load_semantic_mesh = True
 backend_cfg.enable_physics = False
-agent_config = habitat_sim.AgentConfiguration()
-cfg = habitat_sim.Configuration(backend_cfg, [agent_config])
+
+agent_cfg = habitat_sim.agent.AgentConfiguration()
+
+cfg = habitat_sim.Configuration(backend_cfg, [agent_cfg])
 sim = habitat_sim.Simulator(cfg)
 
 audio_sensor_spec = habitat_sim.AudioSensorSpec()
 audio_sensor_spec.uuid = "audio_sensor"
-audio_sensor_spec.enableMaterials = True
+audio_sensor_spec.enableMaterials = False
 audio_sensor_spec.channelLayout.type = habitat_sim.sensor.RLRAudioPropagationChannelLayoutType.Mono
 audio_sensor_spec.channelLayout.channelCount = 1
 audio_sensor_spec.position = [0.0, 1.5, 0.0]

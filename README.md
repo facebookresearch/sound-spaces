@@ -33,14 +33,7 @@ If you use the SoundSpaces platform in your research, please cite the following 
 If you use any of the 3D scene assets (Matterport3D, Replica, HM3D, Gibson, etc.), please make sure you cite these papers as well!
 
 ## Installation 
-1. Install [habitat-lab v0.2.1](https://github.com/facebookresearch/habitat-lab) and [habitat-sim from this commit](https://github.com/facebookresearch/habitat-sim/tree/80f8e31140eaf50fe6c5ab488525ae1bdf250bd9)
-2. Install this repo into pip by running the following command:
-```
-pip install -e .
-```
-3. To use SoundSpaces 1.0, follow instructions on the [dataset](soundspaces/README.md) page to download the rendered audio data and datasets.
-4. ***[New]*** To use SoundSpaces 2.0, add ```--audio``` flag while [building Habitat-Sim from the source](https://github.com/facebookresearch/habitat-sim/blob/80f8e31140eaf50fe6c5ab488525ae1bdf250bd9/BUILD_FROM_SOURCE.md).
-Use this [Habitat-Sim](https://github.com/facebookresearch/habitat-sim/tree/RLRAudioPropagationUpdate) branch for the latest features. 
+Follow the [step-by-step installation guide](INSTALLATION.md) to install the repo.
 
 ## Usage
 This repo renders audio-visual observations with high acoustic and spatial correspondence. 
@@ -88,11 +81,6 @@ SoundSpaces 2.0 is a fast, continuous, configurable and generalizable audio-visu
 users to render sounds for arbitrary spaces and environments. 
 As a result of rendering accuracy improvements, the rendered IRs are different from SoundSpaces 1.0.
 Check out example jupyter notebook for a quick tutorial.
-
-### Some common issues
-* If you run into [invalid pointer issues](https://github.com/facebookresearch/habitat-sim/issues/1747), import quaternion before habitat_sim as a workaround.
-* See this [issue](https://github.com/facebookresearch/rlr-audio-propagation/issues/9) for solutions to GLIBC version issues
-
 
 ## Contributing
 See the [CONTRIBUTING](CONTRIBUTING.md) file for how to help out.

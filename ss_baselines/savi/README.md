@@ -25,7 +25,7 @@ python ss_baselines/savi/run.py --exp-config ss_baselines/savi/config/semantic_a
 ```
 3. Evaluating pretrained model
 ```
-py ss_baselines/savi/run.py --run-type eval --exp-config ss_baselines/savi/config/semantic_audionav/savi.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/semantic_audionav/savi/best_val.pth EVAL.SPLIT test USE_SYNC_VECENV True RL.DDPPO.pretrained False
+python ss_baselines/savi/run.py --run-type eval --exp-config ss_baselines/savi/config/semantic_audionav/savi.yaml EVAL_CKPT_PATH_DIR data/pretrained_weights/semantic_audionav/savi/best_val.pth EVAL.SPLIT test USE_SYNC_VECENV True RL.DDPPO.pretrained False
 ```
 
 ## Citation

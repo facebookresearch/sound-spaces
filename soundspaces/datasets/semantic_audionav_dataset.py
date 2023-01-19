@@ -192,7 +192,8 @@ class SemanticAudioNavDataset(Dataset):
 
         for i, episode in enumerate(deserialized["episodes"]):
             episode = SemanticAudioGoalNavEpisode(**episode)
-            # episode.episode_id = str(i)
+            # a temporal workaround to set scene_dataset_config attribute
+            episode.scene_dataset_config = self._config.SCENES_DIR.split('/')[-1]
 
             if scenes_dir is not None:
                 if episode.scene_id.startswith(DEFAULT_SCENE_PATH_PREFIX):
