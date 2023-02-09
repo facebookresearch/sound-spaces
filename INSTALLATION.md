@@ -68,4 +68,4 @@ and it should output data/output.wav without an error.
 
 ### Current open issues
 * If you run into [invalid pointer issues](https://github.com/facebookresearch/habitat-sim/issues/1747), import quaternion before habitat_sim as a workaround.
-* If the audio rendering crashes due to errors in loading semantic annotations, try to set ```audio_sensor_spec.enableMaterials = False```
+* If the audio rendering crashes due to errors in loading semantic annotations, try to set ```audio_sensor_spec.enableMaterials = False```.

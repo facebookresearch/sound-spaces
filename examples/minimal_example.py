@@ -6,7 +6,7 @@ from scipy.io import wavfile
 
 
 backend_cfg = habitat_sim.SimulatorConfiguration()
-backend_cfg.scene_id = "data/scene_datasets/mp3d/UwV83HsGsw3/UwV83HsGsw3.glb"
+backend_cfg.scene_id = "data/scene_datasets/mp3d/17DRP5sb8fy/17DRP5sb8fy.glb"
 backend_cfg.scene_dataset_config_file = "data/scene_datasets/mp3d/mp3d.scene_dataset_config.json"
 backend_cfg.load_semantic_mesh = True
 backend_cfg.enable_physics = False
@@ -18,7 +18,7 @@ sim = habitat_sim.Simulator(cfg)
 
 audio_sensor_spec = habitat_sim.AudioSensorSpec()
 audio_sensor_spec.uuid = "audio_sensor"
-audio_sensor_spec.enableMaterials = False
+audio_sensor_spec.enableMaterials = True # make sure _semantic.ply file is in the scene folder
 audio_sensor_spec.channelLayout.type = habitat_sim.sensor.RLRAudioPropagationChannelLayoutType.Mono
 audio_sensor_spec.channelLayout.channelCount = 1
 audio_sensor_spec.position = [0.0, 1.5, 0.0]
