@@ -80,7 +80,7 @@ Note that we do not open source the rendering code at this time.
 SoundSpaces 2.0 is a fast, continuous, configurable and generalizable audio-visual simulation platform that allows
 users to render sounds for arbitrary spaces and environments. 
 As a result of rendering accuracy improvements, the rendered IRs are different from SoundSpaces 1.0.
-Check out example jupyter notebook for a quick tutorial.
+Check out the [jupyter notebook](examples/soundspaces2_quick_tutorial.ipynb) for a quick tutorial. The documentation of the APIs can be found [here](SoundSpaces2.md).
 
 ## Contributing
 See the [CONTRIBUTING](CONTRIBUTING.md) file for how to help out.
